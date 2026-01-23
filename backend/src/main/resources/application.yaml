@@ -9,3 +9,15 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+# MAIL CONFIG (Brevo)
+email:
+  host: ${EMAIL_HOST:https://api.brevo.com}
+  api-key: ${EMAIL_API_KEY}
+  endpoint: /v3/smtp/email
+  sender:
+    email: ${EMAIL_SENDER_EMAIL}
+    name: ${EMAIL_SENDER_NAME}
+
+otp:
+  expiration: ${OTP_EXPIRATION:5}

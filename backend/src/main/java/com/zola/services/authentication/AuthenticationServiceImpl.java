@@ -5,10 +5,10 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.zola.dto.request.auth.IntrospectRequest;
-import com.zola.dto.request.auth.RegisterRequest;
+import com.zola.dto.request.auth.*;
 import com.zola.dto.response.AuthResponse;
 import com.zola.dto.response.IntrospectResponse;
+import com.zola.entity.InvalidatedToken;
 import com.zola.entity.User;
 import com.zola.enums.OtpType;
 import com.zola.enums.PredefinedRole;
@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
@@ -98,6 +99,68 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
 
         return buildAuthResponse(user);
+    }
+
+    @Override
+    public AuthResponse authenticate(LoginRequest request) {
+        User user = userRepository.findByUsername(request.getIdentifier())
+                .or(() -> userRepository.findByPhone(request.getIdentifier()))
+                .or(() -> userRepository.findByEmail(request.getIdentifier()))
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.INCORRECT_PASSWORD);
+        }
+
+        if (!user.isActive()) {
+            throw new AppException(ErrorCode.USER_NOT_ACTIVE);
+        }
+
+        return buildAuthResponse(user);
+    }
+
+    @Override
+    public void logout(LogoutRequest request) {
+        try {
+            var signedJWT = verifyToken(request.getToken(), false);
+            String jit = signedJWT.getJWTClaimsSet().getJWTID();
+            String rfId = signedJWT.getJWTClaimsSet().getStringClaim("rfId");
+            Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .accessId(jit)
+                    .refreshId(rfId)
+                    .expirationTime(expiryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+                    .build();
+
+            invalidatedTokenRepository.save(invalidatedToken);
+        } catch (AppException | ParseException e) {
+            // Already logged out or invalid token
+        }
+    }
+
+    @Override
+    public AuthResponse refresh(RefreshTokenRequest request) {
+        try {
+            var signedJWT = verifyToken(request.getRefreshToken(), true);
+            String jit = signedJWT.getJWTClaimsSet().getJWTID();
+            String acId = signedJWT.getJWTClaimsSet().getStringClaim("acId");
+            Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+            invalidatedTokenRepository.save(InvalidatedToken.builder()
+                    .accessId(acId)
+                    .refreshId(jit)
+                    .expirationTime(expiryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+                    .build());
+
+            String userId = signedJWT.getJWTClaimsSet().getSubject();
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+            return buildAuthResponse(user);
+        } catch (AppException | ParseException e) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
     }
 
     @Override

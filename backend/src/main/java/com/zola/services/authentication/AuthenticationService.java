@@ -11,4 +11,6 @@ public interface AuthenticationService {
     AuthResponse authenticate(LoginRequest request);
     void logout(LogoutRequest request);
     AuthResponse refresh(RefreshTokenRequest request);
+    void forgetPassword(ForgetPasswordRequest request);
+    String initForgotPassword(String identifier);
 }

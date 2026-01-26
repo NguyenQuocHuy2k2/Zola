@@ -174,6 +174,38 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return IntrospectResponse.builder().valid(isValid).build();
     }
 
+    @Override
+    public String initForgotPassword(String identifier) {
+        User user = userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByPhone(identifier))
+                .or(() -> userRepository.findByEmail(identifier))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        otpService.sendOtp(user.getEmail(), OtpType.RESET_PASSWORD);
+        return maskEmail(user.getEmail());
+    }
+
+    private String maskEmail(String email) {
+        int atIndex = email.indexOf('@');
+        if (atIndex <= 1) return email;
+        return email.charAt(0) + "***" + email.substring(atIndex);
+    }
+
+    @Override
+    public void forgetPassword(ForgetPasswordRequest request) {
+        User user = userRepository.findByUsername(request.getIdentifier())
+                .or(() -> userRepository.findByPhone(request.getIdentifier()))
+                .or(() -> userRepository.findByEmail(request.getIdentifier()))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!otpService.verifyOtp(user.getEmail(), request.getOtpCode(), OtpType.RESET_PASSWORD)) {
+            throw new AppException(ErrorCode.INVALID_KEY);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
     private AuthResponse buildAuthResponse(User user) {
         String acId = UUID.randomUUID().toString();
         String rfId = UUID.randomUUID().toString();

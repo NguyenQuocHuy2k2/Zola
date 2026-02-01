@@ -1,13 +1,9 @@
 package com.zola.services.authentication;
 
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import com.zola.dto.request.auth.*;
-import com.zola.dto.response.AuthResponse;
-import com.zola.dto.response.IntrospectResponse;
+import com.zola.dto.request.auth.password.ResetPasswordRequest;
+import com.zola.dto.response.auth.AuthResponse;
+import com.zola.dto.response.auth.IntrospectResponse;
 import com.zola.entity.InvalidatedToken;
 import com.zola.entity.User;
 import com.zola.enums.OtpType;
@@ -19,6 +15,7 @@ import com.zola.repository.InvalidatedTokenRepository;
 import com.zola.repository.RoleRepository;
 import com.zola.repository.UserRepository;
 import com.zola.services.otp.OtpService;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -28,10 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
-import java.time.Instant;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
 
@@ -46,27 +40,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     OtpService otpService;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    StringRedisTemplate redisTemplate;
+    JwtService jwtService;
 
-    @Value("${jwt.accessSignerKey:defaultSecretKeyForJwtWhichMustBeAtLeast32BytesLong12345678}")
     @NonFinal
-    String ACCESS_SIGNER_KEY;
-
-    @Value("${jwt.refreshSignerKey:defaultRefreshKeyForJwtWhichMustBeAtLeast32BytesLong12345678}")
-    @NonFinal
-    String REFRESH_SIGNER_KEY;
-
-    @Value("${jwt.valid-duration:3600}")
-    @NonFinal
-    long VALID_DURATION;
-
-    @Value("${jwt.refreshable-duration:86400}")
-    @NonFinal
-    long REFRESHABLE_DURATION;
+    @Value("${app.default-avatar-url}")
+    String DEFAULT_AVATAR_URL;
 
     @Override
     public void register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername()) || userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new AppException(ErrorCode.USER_EXISTED); // Or EMAIL_EXISTED if added to ErrorCode
         }
 
         User user = User.builder()
@@ -76,7 +63,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .phone(request.getPhone())
-                .avatarUrl("https://static.vecteezy.com/system/resources/thumbnails/001/840/618/small/picture-profile-icon-male-icon-human-or-people-sign-and-symbol-free-vector.jpg")
+                .avatarUrl(DEFAULT_AVATAR_URL)
                 .isActive(false)
                 .role(roleRepository.findByRoleName(PredefinedRole.USER))
                 .build();
@@ -89,7 +76,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public AuthResponse verifyRegister(String email, String otp) {
         if (!otpService.verifyOtp(email, otp, OtpType.REGISTER)) {
-            throw new AppException(ErrorCode.INVALID_KEY);
+            throw new AppException(ErrorCode.INVALID_OTP);
         }
 
         User user = userRepository.findByEmail(email)
@@ -101,15 +88,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return buildAuthResponse(user);
     }
 
+    // login with username, email, or phone
     @Override
     public AuthResponse authenticate(LoginRequest request) {
         User user = userRepository.findByUsername(request.getIdentifier())
-                .or(() -> userRepository.findByPhone(request.getIdentifier()))
-                .or(() -> userRepository.findByEmail(request.getIdentifier()))
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+            .or(() -> userRepository.findByEmail(request.getIdentifier()))
+            .or(() -> userRepository.findByPhone(request.getIdentifier()))
+            .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new AppException(ErrorCode.INCORRECT_PASSWORD);
+            throw new AppException(ErrorCode.PASSWORD_MISMATCH);
         }
 
         if (!user.isActive()) {
@@ -122,7 +110,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void logout(LogoutRequest request) {
         try {
-            var signedJWT = verifyToken(request.getToken(), false);
+            var signedJWT = jwtService.verifyToken(request.getToken(), false);
             String jit = signedJWT.getJWTClaimsSet().getJWTID();
             String rfId = signedJWT.getJWTClaimsSet().getStringClaim("rfId");
             Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
@@ -134,7 +122,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .build();
 
             invalidatedTokenRepository.save(invalidatedToken);
-        } catch (AppException | ParseException e) {
+        } catch (AppException | java.text.ParseException e) {
             // Already logged out or invalid token
         }
     }
@@ -142,11 +130,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthResponse refresh(RefreshTokenRequest request) {
         try {
-            var signedJWT = verifyToken(request.getRefreshToken(), true);
+            var signedJWT = jwtService.verifyToken(request.getRefreshToken(), true);
             String jit = signedJWT.getJWTClaimsSet().getJWTID();
             String acId = signedJWT.getJWTClaimsSet().getStringClaim("acId");
             Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
+            // Blacklist the old refresh token
             invalidatedTokenRepository.save(InvalidatedToken.builder()
                     .accessId(acId)
                     .refreshId(jit)
@@ -158,7 +147,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
             return buildAuthResponse(user);
-        } catch (AppException | ParseException e) {
+        } catch (AppException | java.text.ParseException e) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
     }
@@ -167,7 +156,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public IntrospectResponse introspect(IntrospectRequest request) {
         boolean isValid = true;
         try {
-            verifyToken(request.getToken(), false);
+            jwtService.verifyToken(request.getToken(), false);
         } catch (AppException e) {
             isValid = false;
         }
@@ -185,6 +174,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return maskEmail(user.getEmail());
     }
 
+    private User findUserByIdentifier(String identifier) {
+        return userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByPhone(identifier))
+                .or(() -> userRepository.findByEmail(identifier))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Override
+    public String verifyForgotPasswordOtp(String identifier, String otp) {
+        User user = findUserByIdentifier(identifier);
+        String attemptsKey = "forgot-password:attempts:" + identifier;
+        
+        // Rate limiting
+        String attemptsStr = redisTemplate.opsForValue().get(attemptsKey);
+        int attempts = attemptsStr == null ? 0 : Integer.parseInt(attemptsStr);
+        if (attempts >= 5) {
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        }
+
+        // If OTP is invalid, increment attempts and set expiration
+        if (!otpService.verifyOtp(user.getEmail(), otp, OtpType.RESET_PASSWORD)) {
+            redisTemplate.opsForValue().increment(attemptsKey);
+            redisTemplate.expire(attemptsKey, 15, java.util.concurrent.TimeUnit.MINUTES);
+            throw new AppException(ErrorCode.INVALID_OTP);
+        }
+
+        // Success - Clear attempts and generate reset token
+        redisTemplate.delete(attemptsKey);
+        String resetToken = UUID.randomUUID().toString();
+        String tokenKey = "forgot-password:token:" + resetToken;
+        redisTemplate.opsForValue().set(tokenKey, identifier, 5, java.util.concurrent.TimeUnit.MINUTES);
+        
+        return resetToken;
+    }
+
     private String maskEmail(String email) {
         int atIndex = email.indexOf('@');
         if (atIndex <= 1) return email;
@@ -192,77 +216,34 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void forgetPassword(ForgetPasswordRequest request) {
-        User user = userRepository.findByUsername(request.getIdentifier())
-                .or(() -> userRepository.findByPhone(request.getIdentifier()))
-                .or(() -> userRepository.findByEmail(request.getIdentifier()))
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        if (!otpService.verifyOtp(user.getEmail(), request.getOtpCode(), OtpType.RESET_PASSWORD)) {
-            throw new AppException(ErrorCode.INVALID_KEY);
+    public void resetPassword(ResetPasswordRequest request) {
+        String tokenKey = "forgot-password:token:" + request.getResetToken();
+        String identifier = redisTemplate.opsForValue().get(tokenKey);
+        
+        if (identifier == null || !identifier.equals(request.getIdentifier())) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
         }
+
+        User user = findUserByIdentifier(identifier);
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+        
+        // Consume token
+        redisTemplate.delete(tokenKey);
     }
 
     private AuthResponse buildAuthResponse(User user) {
         String acId = UUID.randomUUID().toString();
         String rfId = UUID.randomUUID().toString();
 
-        String accessToken = generateToken(user, VALID_DURATION, acId, rfId, ACCESS_SIGNER_KEY);
-        String refreshToken = generateToken(user, REFRESHABLE_DURATION, rfId, acId, REFRESH_SIGNER_KEY);
+        String accessToken = jwtService.generateAccessToken(user, rfId);
+        String refreshToken = jwtService.generateRefreshToken(user, acId);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .user(userMapper.toUserProfileResponse(user))
                 .build();
-    }
-
-    private String generateToken(User user, long duration, String jit, String otherId, String signerKey) {
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getId())
-                .issuer("zola.com")
-                .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(duration, ChronoUnit.SECONDS).toEpochMilli()))
-                .jwtID(jit)
-                .claim(signerKey.equals(ACCESS_SIGNER_KEY) ? "rfId" : "acId", otherId)
-                .claim("scope", user.getRole().getName())
-                .build();
-
-        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-        JWSObject jwsObject = new JWSObject(header, payload);
-
-        try {
-            jwsObject.sign(new MACSigner(signerKey.getBytes()));
-            return jwsObject.serialize();
-        } catch (JOSEException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private SignedJWT verifyToken(String token, boolean isRefresh) {
-        try {
-            JWSVerifier verifier = new MACVerifier((isRefresh ? REFRESH_SIGNER_KEY : ACCESS_SIGNER_KEY).getBytes());
-            SignedJWT signedJWT = SignedJWT.parse(token);
-
-            boolean verified = signedJWT.verify(verifier);
-            Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-            if (!(verified && expiryTime.after(new Date()))) {
-                throw new AppException(ErrorCode.UNAUTHENTICATED);
-            }
-
-            if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
-                throw new AppException(ErrorCode.UNAUTHENTICATED);
-            }
-
-            return signedJWT;
-        } catch (JOSEException | ParseException e) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
     }
 }

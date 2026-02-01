@@ -1,26 +1,12 @@
 package com.zola.mapper;
 
-import com.zola.dto.response.UserProfileResponse;
+import com.zola.dto.response.profile.UserProfileResponse;
 import com.zola.entity.User;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class UserMapper {
-    public UserProfileResponse toUserProfileResponse(User user) {
-        if (user == null) {
-            return null;
-        }
-
-        return UserProfileResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .avatarUrl(user.getAvatarUrl())
-                .role(user.getRole() != null ? user.getRole().getName() : null)
-                .createdAt(user.getCreatedAt())
-                .build();
-    }
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+    @Mapping(target = "role", source = "role.name")
+    UserProfileResponse toUserProfileResponse(User user);
 }

@@ -1,11 +1,13 @@
 package com.zola.dto.request.email;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
-@Data
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 @Builder
+@Getter
 public class Account {
-    private String name;
-    private String email;
+    String name;
+    String email;
 }

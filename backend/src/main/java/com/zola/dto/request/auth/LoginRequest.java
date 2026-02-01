@@ -12,8 +12,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoginRequest {
 
-    // Can be either username or email or phone
-    @NotBlank(message = "Identifier is required")
+    // Can be either username or email
+    @NotBlank(message = "Email or username is required")
     String identifier;
 
     @NotBlank(message = "Password is required")

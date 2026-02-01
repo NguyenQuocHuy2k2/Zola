@@ -10,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -76,12 +74,14 @@ public class EmailServiceImpl implements EmailService {
                 "  </table>" +
                 "</body>" +
                 "</html>";
+
         EmailRequest emailRequest = EmailRequest.builder()
                 .sender(Account.builder().name(senderName).email(senderEmail).build())
-                .to(List.of(Account.builder().email(to).build()))
+                .to(java.util.List.of(Account.builder().email(to).build()))
                 .subject("Zola - Mã xác thực OTP của bạn")
                 .htmlContent(content)
                 .build();
+
         try {
             emailClient.sendEmail(apiKey, emailRequest);
             log.info("OTP email sent successfully to {} via Brevo", to);

@@ -1,4 +1,4 @@
-package com.zola.dto.response;
+package com.zola.dto.request.cart;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,11 +8,8 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ApiResponse<T> {
-    @Builder.Default
-    String code = "success";
-
-    String message;
-
-    T result;
+public class CartItemRequest {
+    String productId;
+    Long variantId;
+    Integer quantity;
 }

@@ -18,12 +18,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     @Query("SELECT p FROM Product p ORDER BY p.favoriteCount DESC")
     List<Product> findTop10ByOrderByFavoriteCountDesc(Pageable pageable);
 
-    @Query("SELECT p FROM Product p ORDER BY p.soldQuantity DESC")
-    List<Product> findTop10ByOrderBySoldQuantityDesc(Pageable pageable);
-
-    @Query("SELECT p FROM Product p ORDER BY p.discountPercentage DESC")
-    List<Product> findTop20ByOrderByDiscountPercentageDesc(Pageable pageable);
-
     @Query("SELECT DISTINCT p FROM Product p " +
            "LEFT JOIN p.variants v " +
            "WHERE (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +

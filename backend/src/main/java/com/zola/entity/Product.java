@@ -52,12 +52,4 @@ public class Product {
     @Column(name = "favorite_count")
     @Builder.Default
     Long favoriteCount = 0L;
-
-    @Column(name = "sold_quantity")
-    @Builder.Default
-    Integer soldQuantity = 0;
-
-    @Column(name = "discount_percentage")
-    @Builder.Default
-    Integer discountPercentage = 0;
 }

@@ -8,6 +8,7 @@ interface CategoryListProps {
   categories: Category[];
 }
 
+// Giao diện list danh mục (Slide ngang)
 export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
   const router = useRouter();
 

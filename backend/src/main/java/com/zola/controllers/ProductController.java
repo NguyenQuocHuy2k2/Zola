@@ -89,6 +89,7 @@ public class ProductController {
                 .build();
     }
 
+    // Chức năng hiển thị 10 sản phẩm bán chạy nhất ngang màn hình
     @GetMapping("/hot-products")
     public ApiResponse<List<ProductResponse>> getHotProducts() {
         return ApiResponse.<List<ProductResponse>>builder()

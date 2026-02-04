@@ -13,6 +13,7 @@ public interface ProductService {
     ProductResponse createProduct(ProductRequest request);
     ProductResponse uploadImages(String productId, List<MultipartFile> files) throws IOException;
     List<ProductResponse> getAllProducts();
+    // API lấy 20 thiết bị giảm giá
     Page<ProductResponse> getProductsPaged(int page, int size);
     Page<ProductResponse> getProductsByCategory(int categoryId, int page, int size);
     Page<ProductResponse> searchProducts(SearchProductRequest request);

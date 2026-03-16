@@ -105,7 +105,6 @@ export default function HomeScreen() {
       <FlatList
         data={products}
         keyExtractor={(item) => item.id}
-        // Hiển thị 20 sản phẩm (2 Cột) chia theo thẻ Sale
         numColumns={2}
         renderItem={({ item }: { item: Product }) => (
           <ProductCard product={item} />

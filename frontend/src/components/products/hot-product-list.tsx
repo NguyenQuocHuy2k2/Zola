@@ -9,7 +9,6 @@ interface HotProductListProps {
   hotProducts: Product[];
 }
 
-// Chức năng hiển thị 10 sản phẩm bán chạy nhất ngang màn hình
 export const HotProductList: React.FC<HotProductListProps> = ({ hotProducts }) => {
   const router = useRouter();
   const theme = useTheme();

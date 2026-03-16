@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Đen",
+    "hexCode": "#000000"
+  },
+  {
+    "name": "Trắng",
+    "hexCode": "#FFFFFF"
+  },
+  {
+    "name": "Xám",
+    "hexCode": "#808080"
+  },
+  {
+    "name": "Xanh Navy",
+    "hexCode": "#000080"
+  },
+  {
+    "name": "Be (Beige)",
+    "hexCode": "#F5F5DC"
+  }
+]

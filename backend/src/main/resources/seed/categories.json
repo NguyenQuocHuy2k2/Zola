@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Áo Thun",
+    "description": "Các loại áo thun basic và graphic",
+    "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182"
+  },
+  {
+    "name": "Áo Sơ Mi",
+    "description": "Áo sơ mi công sở, casual",
+    "imageUrl": "https://product.hstatic.net/200000588671/product/ao-so-mi-nam-bycotton-trang-art-nhan_8ec622a241ea4deb93a02bdbdcb87954_master.jpg"
+  },
+  {
+    "name": "Quần",
+    "description": "Quần jean, kaki, short",
+    "imageUrl": "https://product.hstatic.net/1000096703/product/1_b5175e356dc7497cb2431e6b941069db_master.jpg"
+  },
+  {
+    "name": "Áo Khoác",
+    "description": "Áo khoác gió, hoodie, blazer",
+    "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/399/392/products/h8-ak6-pp-web-thumbnails-11.jpg?v=1745308217517"
+  },
+  {
+    "name": "Giày Dép",
+    "description": "Giày sneaker, sandal, dép thời trang",
+    "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20241220_nNw91a2spb.jpeg?v=1734680457"
+  },
+  {
+    "name": "Mũ",
+    "description": "Mũ lưỡi trai, nón bucket, mũ len",
+    "imageUrl": "https://zerdio.com.vn/wp-content/uploads/2021/04/mu-vanh-nam-2.jpg"
+  }
+]

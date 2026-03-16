@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=com.zola.configuration.DotEnvEnvironmentPostProcessor
+org.springframework.context.ApplicationListener=com.zola.configuration.DotEnvEnvironmentPostProcessor

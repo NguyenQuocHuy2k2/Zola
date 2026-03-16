@@ -1,6 +1,15 @@
 package com.zola.enums;
 
-public class PredefinedRole {
-    public static final String USER = "USER";
-    public static final String ADMIN = "ADMIN";
+import lombok.Getter;
+
+@Getter
+public enum PredefinedRole {
+    USER("USER"),
+    ADMIN("ADMIN");
+
+    private final String roleName;
+
+    PredefinedRole(String roleName) {
+        this.roleName = roleName;
+    }
 }

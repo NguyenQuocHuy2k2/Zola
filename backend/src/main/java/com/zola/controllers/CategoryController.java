@@ -29,7 +29,6 @@ public class CategoryController {
                 .build();
     }
 
-    // API hiển thị danh sách category theo chiều ngang
     @GetMapping
     public ApiResponse<List<CategoryResponse>> getAllCategories() {
         return ApiResponse.<List<CategoryResponse>>builder()

@@ -1,0 +1,1113 @@
+[
+  {
+    "name": "Áo Thun Basic Cotton Trắng",
+    "description": "Áo thun basic form rộng thoải mái, chất liệu 100% cotton premium thoáng mát.",
+    "basePrice": "150000",
+    "status": "ACTIVE",
+    "brand": "Zola",
+    "category": "Áo Thun",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Trắng",
+        "stockQuantity": 30
+      },
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 50
+      },
+      {
+        "size": "L",
+        "color": "Trắng",
+        "stockQuantity": 40
+      },
+      {
+        "size": "XL",
+        "color": "Trắng",
+        "stockQuantity": 20
+      }
+    ]
+  },
+  {
+    "name": "Áo Thun Graphic Đen",
+    "description": "Áo thun in hình graphic độc đáo, chất cotton 100% dày dặn.",
+    "basePrice": "180000",
+    "status": "ACTIVE",
+    "brand": "Local Brand",
+    "category": "Áo Thun",
+    "images": [
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 45
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 35
+      },
+      {
+        "size": "XL",
+        "color": "Đen",
+        "stockQuantity": 15
+      }
+    ]
+  },
+  {
+    "name": "Áo Thun Oversize Hàn Quốc",
+    "description": "Áo thun oversize phong cách Hàn Quốc, form rộng cá tính.",
+    "basePrice": "220000",
+    "status": "ACTIVE",
+    "brand": "H&M",
+    "category": "Áo Thun",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://onoff.vn/blog/wp-content/uploads/2024/10/phoi-do-voi-ao-thun-trang-nu-1-1.jpg",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Xám",
+        "stockQuantity": 20
+      },
+      {
+        "size": "M",
+        "color": "Xám",
+        "stockQuantity": 30
+      },
+      {
+        "size": "L",
+        "color": "Xám",
+        "stockQuantity": 25
+      },
+      {
+        "size": "S",
+        "color": "Xanh Navy",
+        "stockQuantity": 20
+      },
+      {
+        "size": "M",
+        "color": "Xanh Navy",
+        "stockQuantity": 30
+      }
+    ]
+  },
+  {
+    "name": "Áo Thun Trơn Uniqlo",
+    "description": "Áo thun trơn chất liệu cotton mềm mịn, nhiều màu sắc đa dạng.",
+    "basePrice": "199000",
+    "status": "ACTIVE",
+    "brand": "Uniqlo",
+    "category": "Áo Thun",
+    "images": [
+      {
+        "imageUrl": "https://onoff.vn/blog/wp-content/uploads/2024/10/phoi-do-voi-ao-thun-trang-nu-1-1.jpg",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7uVX6WDtc-dBfggOGbLhBmHH9mWfY9Q0Gdg&s",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Be (Beige)",
+        "stockQuantity": 25
+      },
+      {
+        "size": "M",
+        "color": "Be (Beige)",
+        "stockQuantity": 35
+      },
+      {
+        "size": "L",
+        "color": "Trắng",
+        "stockQuantity": 30
+      },
+      {
+        "size": "XL",
+        "color": "Đen",
+        "stockQuantity": 20
+      },
+      {
+        "size": "XXL",
+        "color": "Đen",
+        "stockQuantity": 10
+      }
+    ]
+  },
+  {
+    "name": "Áo Thun Crop Top Nữ",
+    "description": "Áo thun crop top thời trang, phù hợp mix đồ năng động.",
+    "basePrice": "130000",
+    "status": "ACTIVE",
+    "brand": "Zola",
+    "category": "Áo Thun",
+    "images": [
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7uVX6WDtc-dBfggOGbLhBmHH9mWfY9Q0Gdg&s",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Trắng",
+        "stockQuantity": 40
+      },
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 50
+      },
+      {
+        "size": "S",
+        "color": "Đen",
+        "stockQuantity": 35
+      },
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 45
+      }
+    ]
+  },
+  {
+    "name": "Áo Thun Pocket Tee",
+    "description": "Áo thun có túi ngực nhỏ xinh, basic dễ mix trang phục hàng ngày.",
+    "basePrice": "160000",
+    "status": "ACTIVE",
+    "brand": "Local Brand",
+    "category": "Áo Thun",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Xanh Navy",
+        "stockQuantity": 28
+      },
+      {
+        "size": "L",
+        "color": "Xanh Navy",
+        "stockQuantity": 22
+      },
+      {
+        "size": "M",
+        "color": "Xám",
+        "stockQuantity": 30
+      },
+      {
+        "size": "L",
+        "color": "Xám",
+        "stockQuantity": 20
+      }
+    ]
+  },
+  {
+    "name": "Áo Thun Sọc Ngang",
+    "description": "Áo thun sọc ngang phong cách thủy thủ, trẻ trung và cá tính.",
+    "basePrice": "175000",
+    "status": "ACTIVE",
+    "brand": "H&M",
+    "category": "Áo Thun",
+    "images": [
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://onoff.vn/blog/wp-content/uploads/2024/10/phoi-do-voi-ao-thun-trang-nu-1-1.jpg",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Trắng",
+        "stockQuantity": 20
+      },
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 30
+      },
+      {
+        "size": "L",
+        "color": "Trắng",
+        "stockQuantity": 25
+      }
+    ]
+  },
+  {
+    "name": "Áo Thun Raglan Tay Dài",
+    "description": "Áo thun raglan tay dài phối màu, chất cotton ấm áp thích hợp mùa thu.",
+    "basePrice": "210000",
+    "status": "ACTIVE",
+    "brand": "Zola",
+    "category": "Áo Thun",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7uVX6WDtc-dBfggOGbLhBmHH9mWfY9Q0Gdg&s",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Xám",
+        "stockQuantity": 25
+      },
+      {
+        "size": "L",
+        "color": "Xám",
+        "stockQuantity": 20
+      },
+      {
+        "size": "XL",
+        "color": "Đen",
+        "stockQuantity": 15
+      },
+      {
+        "size": "XXL",
+        "color": "Đen",
+        "stockQuantity": 10
+      }
+    ]
+  },
+  {
+    "name": "Áo Sơ Mi Oxford Trắng",
+    "description": "Áo sơ mi Oxford vải bền đẹp, form chuẩn công sở lịch sự.",
+    "basePrice": "280000",
+    "status": "ACTIVE",
+    "brand": "Zola",
+    "category": "Áo Sơ Mi",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 30
+      },
+      {
+        "size": "L",
+        "color": "Trắng",
+        "stockQuantity": 25
+      },
+      {
+        "size": "XL",
+        "color": "Trắng",
+        "stockQuantity": 15
+      }
+    ]
+  },
+  {
+    "name": "Áo Sơ Mi Flannel Kẻ Caro",
+    "description": "Áo sơ mi flannel kẻ caro phong cách casual thu đông ấm áp.",
+    "basePrice": "320000",
+    "status": "ACTIVE",
+    "brand": "H&M",
+    "category": "Áo Sơ Mi",
+    "images": [
+      {
+        "imageUrl": "https://onoff.vn/blog/wp-content/uploads/2024/10/phoi-do-voi-ao-thun-trang-nu-1-1.jpg",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 18
+      },
+      {
+        "size": "XL",
+        "color": "Đen",
+        "stockQuantity": 12
+      }
+    ]
+  },
+  {
+    "name": "Áo Sơ Mi Linen Mùa Hè",
+    "description": "Áo sơ mi chất liệu linen nhẹ mát, thích hợp mùa hè đi biển dạo phố.",
+    "basePrice": "295000",
+    "status": "ACTIVE",
+    "brand": "Uniqlo",
+    "category": "Áo Sơ Mi",
+    "images": [
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7uVX6WDtc-dBfggOGbLhBmHH9mWfY9Q0Gdg&s",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Be (Beige)",
+        "stockQuantity": 25
+      },
+      {
+        "size": "M",
+        "color": "Be (Beige)",
+        "stockQuantity": 30
+      },
+      {
+        "size": "L",
+        "color": "Trắng",
+        "stockQuantity": 20
+      }
+    ]
+  },
+  {
+    "name": "Áo Sơ Mi Denim",
+    "description": "Áo sơ mi denim wash nhẹ, phong cách street style cá tính.",
+    "basePrice": "350000",
+    "status": "ACTIVE",
+    "brand": "Local Brand",
+    "category": "Áo Sơ Mi",
+    "images": [
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://onoff.vn/blog/wp-content/uploads/2024/10/phoi-do-voi-ao-thun-trang-nu-1-1.jpg",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Xanh Navy",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Xanh Navy",
+        "stockQuantity": 15
+      },
+      {
+        "size": "XL",
+        "color": "Xanh Navy",
+        "stockQuantity": 10
+      }
+    ]
+  },
+  {
+    "name": "Áo Sơ Mi Oversize Unisex",
+    "description": "Áo sơ mi oversize unisex form rộng thời thượng, dễ mix đồ.",
+    "basePrice": "260000",
+    "status": "ACTIVE",
+    "brand": "Zola",
+    "category": "Áo Sơ Mi",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": true
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 25
+      },
+      {
+        "size": "L",
+        "color": "Trắng",
+        "stockQuantity": 20
+      },
+      {
+        "size": "XL",
+        "color": "Xám",
+        "stockQuantity": 15
+      },
+      {
+        "size": "XXL",
+        "color": "Xám",
+        "stockQuantity": 8
+      }
+    ]
+  },
+  {
+    "name": "Quần Jean Slim Fit Nam",
+    "description": "Quần jean slim fit ôm dáng chuẩn, chất denim co giãn thoải mái.",
+    "basePrice": "280000",
+    "status": "ACTIVE",
+    "brand": "Levi's",
+    "category": "Quần",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 22
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 18
+      },
+      {
+        "size": "M",
+        "color": "Xanh Navy",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Xanh Navy",
+        "stockQuantity": 15
+      }
+    ]
+  },
+  {
+    "name": "Quần Jean Ống Rộng Nữ",
+    "description": "Quần jean ống rộng nữ phong cách retro y2k, cá tính năng động.",
+    "basePrice": "299000",
+    "status": "ACTIVE",
+    "brand": "H&M",
+    "category": "Quần",
+    "images": [
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7uVX6WDtc-dBfggOGbLhBmHH9mWfY9Q0Gdg&s",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Xanh Navy",
+        "stockQuantity": 25
+      },
+      {
+        "size": "M",
+        "color": "Xanh Navy",
+        "stockQuantity": 30
+      },
+      {
+        "size": "L",
+        "color": "Xanh Navy",
+        "stockQuantity": 20
+      }
+    ]
+  },
+  {
+    "name": "Quần Kaki Slim Beige",
+    "description": "Quần kaki slim fit màu beige lịch lãm, phù hợp đi làm và đi chơi.",
+    "basePrice": "250000",
+    "status": "ACTIVE",
+    "brand": "Uniqlo",
+    "category": "Quần",
+    "images": [
+      {
+        "imageUrl": "https://onoff.vn/blog/wp-content/uploads/2024/10/phoi-do-voi-ao-thun-trang-nu-1-1.jpg",
+        "isPrimary": true
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Be (Beige)",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Be (Beige)",
+        "stockQuantity": 18
+      },
+      {
+        "size": "XL",
+        "color": "Be (Beige)",
+        "stockQuantity": 12
+      },
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 15
+      }
+    ]
+  },
+  {
+    "name": "Quần Short Thể Thao",
+    "description": "Quần short thể thao chất liệu quick-dry thoáng khí, phù hợp tập gym và đi biển.",
+    "basePrice": "170000",
+    "status": "ACTIVE",
+    "brand": "Nike",
+    "category": "Quần",
+    "images": [
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7uVX6WDtc-dBfggOGbLhBmHH9mWfY9Q0Gdg&s",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Đen",
+        "stockQuantity": 30
+      },
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 40
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 35
+      },
+      {
+        "size": "M",
+        "color": "Xám",
+        "stockQuantity": 25
+      },
+      {
+        "size": "L",
+        "color": "Xám",
+        "stockQuantity": 20
+      }
+    ]
+  },
+  {
+    "name": "Quần Jogger Cotton",
+    "description": "Quần jogger cotton mềm mại, co giãn 4 chiều cực thoải mái.",
+    "basePrice": "230000",
+    "status": "ACTIVE",
+    "brand": "Zola",
+    "category": "Quần",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Xám",
+        "stockQuantity": 30
+      },
+      {
+        "size": "L",
+        "color": "Xám",
+        "stockQuantity": 25
+      },
+      {
+        "size": "XL",
+        "color": "Đen",
+        "stockQuantity": 18
+      },
+      {
+        "size": "XXL",
+        "color": "Đen",
+        "stockQuantity": 10
+      }
+    ]
+  },
+  {
+    "name": "Áo Khoác Hoodie Nỉ Bông",
+    "description": "Áo hoodie nỉ bông dày ấm, túi kangaroo tiện lợi, phù hợp ngày lạnh.",
+    "basePrice": "390000",
+    "status": "ACTIVE",
+    "brand": "Zola",
+    "category": "Áo Khoác",
+    "images": [
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://onoff.vn/blog/wp-content/uploads/2024/10/phoi-do-voi-ao-thun-trang-nu-1-1.jpg",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 25
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 20
+      },
+      {
+        "size": "XL",
+        "color": "Xám",
+        "stockQuantity": 15
+      },
+      {
+        "size": "XXL",
+        "color": "Xám",
+        "stockQuantity": 8
+      }
+    ]
+  },
+  {
+    "name": "Áo Khoác Bomber Denim",
+    "description": "Áo khoác bomber denim streetwear cá tính, lót cotton giữ ấm.",
+    "basePrice": "450000",
+    "status": "ACTIVE",
+    "brand": "Local Brand",
+    "category": "Áo Khoác",
+    "images": [
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/f4d87e-8901/ps/20240607_g6gomPgsR9.jpeg?v=1717733203",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Xanh Navy",
+        "stockQuantity": 18
+      },
+      {
+        "size": "L",
+        "color": "Xanh Navy",
+        "stockQuantity": 15
+      },
+      {
+        "size": "XL",
+        "color": "Xanh Navy",
+        "stockQuantity": 10
+      }
+    ]
+  },
+  {
+    "name": "Áo Khoác Gió Thể Thao",
+    "description": "Áo khoác gió thể thao nhẹ cản gió tốt, phản quang an toàn ban đêm.",
+    "basePrice": "360000",
+    "status": "ACTIVE",
+    "brand": "Nike",
+    "category": "Áo Khoác",
+    "images": [
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7uVX6WDtc-dBfggOGbLhBmHH9mWfY9Q0Gdg&s",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/05016d-25618/ps/20240506_otuE9sekrV.jpeg?v=1714992182",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 18
+      },
+      {
+        "size": "M",
+        "color": "Xám",
+        "stockQuantity": 15
+      },
+      {
+        "size": "L",
+        "color": "Xám",
+        "stockQuantity": 12
+      }
+    ]
+  },
+  {
+    "name": "Áo Blazer Công Sở Nữ",
+    "description": "Áo blazer công sở thanh lịch, form fitted tôn dáng, chất liệu polyester cao cấp.",
+    "basePrice": "520000",
+    "status": "ACTIVE",
+    "brand": "Zola",
+    "category": "Áo Khoác",
+    "images": [
+      {
+        "imageUrl": "https://onoff.vn/blog/wp-content/uploads/2024/10/phoi-do-voi-ao-thun-trang-nu-1-1.jpg",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/119/564/products/ao-thun-nu-han-quoc-s5952.jpg?v=1686128637410",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Đen",
+        "stockQuantity": 15
+      },
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 15
+      },
+      {
+        "size": "S",
+        "color": "Xám",
+        "stockQuantity": 10
+      },
+      {
+        "size": "M",
+        "color": "Xám",
+        "stockQuantity": 15
+      }
+    ]
+  },
+  {
+    "name": "Giày Sneaker Trắng Classic",
+    "description": "Giày sneaker trắng cổ điển, đế cao su bền chắc, dễ phối đồ.",
+    "basePrice": "450000",
+    "status": "ACTIVE",
+    "brand": "Biti's",
+    "category": "Giày Dép",
+    "images": [
+      {
+        "imageUrl": "https://mikenco.vn/cdn/shop/files/494828277_578196821989359_4417001043089340917_n.jpg?v=1755570858&width=533",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://pos.nvncdn.com/b5a043-19330/ps/Elite-Sneakers-Trang-vien-nau-2.jpg?v=1770262301",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Trắng",
+        "stockQuantity": 25
+      },
+      {
+        "size": "XL",
+        "color": "Trắng",
+        "stockQuantity": 15
+      }
+    ]
+  },
+  {
+    "name": "Giày Sandal Da Nữ",
+    "description": "Sandal da mềm êm chân, quai chéo thời trang, phù hợp đi dạo và đi biển.",
+    "basePrice": "320000",
+    "status": "ACTIVE",
+    "brand": "Huy Hoàng",
+    "category": "Giày Dép",
+    "images": [
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/148/806/products/hh7060-giay-sandal-nu-huy-hoang-mau-da-2.jpg",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://giaycaosmartmen.com/wp-content/uploads/2021/02/mua-giay-dep-da-nam-ha-noi-1.jpg",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Be (Beige)",
+        "stockQuantity": 18
+      },
+      {
+        "size": "M",
+        "color": "Be (Beige)",
+        "stockQuantity": 22
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 15
+      }
+    ]
+  },
+  {
+    "name": "Dép Phòng Sạch EVA Siêu Nhẹ",
+    "description": "Dép EVA siêu nhẹ, đế chống trượt, phù hợp đi trong nhà và dạo phố.",
+    "basePrice": "150000",
+    "status": "ACTIVE",
+    "brand": "Biti's",
+    "category": "Giày Dép",
+    "images": [
+      {
+        "imageUrl": "https://product.hstatic.net/200000033050/product/giay-dep-phong-sach-eva-sieu-nhe__4__41bf01a8ab544e2ebbaf932ec30535cb_1024x1024.jpg",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://mikenco.vn/cdn/shop/files/494828277_578196821989359_4417001043089340917_n.jpg?v=1755570858&width=533",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "S",
+        "color": "Trắng",
+        "stockQuantity": 30
+      },
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 40
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 25
+      },
+      {
+        "size": "XL",
+        "color": "Đen",
+        "stockQuantity": 15
+      }
+    ]
+  },
+  {
+    "name": "Giày Da Nam Oxford",
+    "description": "Giày da oxford lịch lãm, đế da mềm mại, thích hợp đi làm và sự kiện.",
+    "basePrice": "680000",
+    "status": "ACTIVE",
+    "brand": "Smart Men",
+    "category": "Giày Dép",
+    "images": [
+      {
+        "imageUrl": "https://giaycaosmartmen.com/wp-content/uploads/2021/02/mua-giay-dep-da-nam-ha-noi-1.jpg",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOkfciLNBXJQ4VA2sea0fGnromCcoC6f0LjA&s",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 12
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 15
+      },
+      {
+        "size": "XL",
+        "color": "Đen",
+        "stockQuantity": 10
+      }
+    ]
+  },
+  {
+    "name": "Mũ Lưỡi Trai MLB NY",
+    "description": "Mũ lưỡi trai MLB New York Yankees chính hãng, phong cách thể thao bụi bặm.",
+    "basePrice": "350000",
+    "status": "ACTIVE",
+    "brand": "MLB",
+    "category": "Mũ",
+    "images": [
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/100/425/004/products/mu-mlb-new-york-yankees-3acpwc13-1708773420152.jpg?v=1708773441170",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPyi_szXw4xkSqewsWZJBTMeBD_OHo1aIUfQ&s",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 30
+      },
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 25
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 20
+      }
+    ]
+  },
+  {
+    "name": "Nón Bucket Đi Biển",
+    "description": "Nón bucket vành rộng chống nắng, chất liệu cotton nhẹ thoáng, thích hợp mùa hè.",
+    "basePrice": "180000",
+    "status": "ACTIVE",
+    "brand": "Local Brand",
+    "category": "Mũ",
+    "images": [
+      {
+        "imageUrl": "https://hd1.hotdeal.vn/images/uploads/2016/Thang%205/05/254965/254965_mu-no-di-bien_body%20%285%29.jpg",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://www.chapi.vn/img/product/2020/2/4/mu-luoi-trai-laurenclay-9-500x500.jpg",
+        "isPrimary": false
+      },
+      {
+        "imageUrl": "https://zerdio.com.vn/wp-content/uploads/2021/04/mu-vanh-nam-2.jpg",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Be (Beige)",
+        "stockQuantity": 35
+      },
+      {
+        "size": "M",
+        "color": "Trắng",
+        "stockQuantity": 30
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 20
+      }
+    ]
+  },
+  {
+    "name": "Mũ Snapback Nam",
+    "description": "Mũ snapback cá tính phong cách hip-hop, có thể điều chỉnh size.",
+    "basePrice": "220000",
+    "status": "ACTIVE",
+    "brand": "New Era",
+    "category": "Mũ",
+    "images": [
+      {
+        "imageUrl": "https://bizweb.dktcdn.net/thumb/1024x1024/100/340/361/products/taixuong20241207t091055021330c-839f73d0-762a-4558-9ff1-206367a9b586.png?v=1742786264350",
+        "isPrimary": true
+      },
+      {
+        "imageUrl": "https://zerdio.com.vn/wp-content/uploads/2021/04/mu-vanh-nam-2.jpg",
+        "isPrimary": false
+      }
+    ],
+    "variants": [
+      {
+        "size": "M",
+        "color": "Đen",
+        "stockQuantity": 25
+      },
+      {
+        "size": "M",
+        "color": "Xanh Navy",
+        "stockQuantity": 20
+      },
+      {
+        "size": "L",
+        "color": "Đen",
+        "stockQuantity": 15
+      }
+    ]
+  }
+]

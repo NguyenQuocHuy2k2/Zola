@@ -32,7 +32,7 @@ export const CheckoutItems = ({
                 <MaterialCommunityIcons name="basket-outline" size={20} color={theme.colors.primary} />
                 <Text style={styles.sectionTitle}>Sản phẩm trong giỏ</Text>
             </View>
-            
+
             {cartItems.map((item, idx) => (
                 <View key={idx} style={[styles.itemRow, idx === cartItems.length - 1 && { borderBottomWidth: 0, paddingBottom: 0 }]}>
                     <Image source={{ uri: getProductPrimaryImage(item.product) }} style={styles.itemImage} resizeMode="cover" />

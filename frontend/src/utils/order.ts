@@ -1,34 +1,22 @@
 import { OrderStatus } from '@/services/order.service';
+import { STATUS_LABEL, STATUS_COLOR } from '@/constants/order';
 
 export const TABS = [
     { value: 'ALL', label: 'Tất cả', icon: 'list-status' },
-    { value: 'PENDING', label: 'Đang chờ', icon: 'clock-outline' },
-    { value: 'CONFIRMED', label: 'Xác nhận', icon: 'check-circle-outline' },
-    { value: 'PREPARING', label: 'Đang chuẩn bị', icon: 'package-variant' },
-    { value: 'SHIPPING', label: 'Đang giao', icon: 'truck-delivery-outline' },
-    { value: 'RECEIVED', label: 'Đã nhận', icon: 'archive-check-outline' },
-    { value: 'CANCELLED', label: 'Đã hủy', icon: 'close-circle-outline' },
+    { value: 'PENDING', label: STATUS_LABEL.PENDING, icon: 'clock-outline' },
+    { value: 'CONFIRMED', label: STATUS_LABEL.CONFIRMED, icon: 'check-circle-outline' },
+    { value: 'PREPARING', label: STATUS_LABEL.PREPARING, icon: 'package-variant' },
+    { value: 'SHIPPING', label: STATUS_LABEL.SHIPPING, icon: 'truck-delivery-outline' },
+    { value: 'RECEIVED', label: STATUS_LABEL.RECEIVED, icon: 'archive-check-outline' },
+    { value: 'CANCELLED', label: STATUS_LABEL.CANCELLED, icon: 'close-circle-outline' },
 ];
 
 export const getStatusLabel = (status: OrderStatus | string) => {
-    switch (status) {
-        case 'PENDING': return 'Đang chờ';
-        case 'CONFIRMED': return 'Xác nhận';
-        case 'PREPARING': return 'Chuẩn bị hàng';
-        case 'SHIPPING': return 'Đang giao';
-        case 'RECEIVED': return 'Đã nhận';
-        case 'CANCELLED': return 'Đã hủy';
-        default: return status;
-    }
+    return STATUS_LABEL[status as OrderStatus] || status;
 };
 
 export const getStatusColor = (status: OrderStatus | string) => {
-    switch (status) {
-        case 'RECEIVED': return '#388E3C';
-        case 'CANCELLED': return '#D32F2F';
-        case 'SHIPPING': return '#1976D2';
-        default: return '#FFA000';
-    }
+    return STATUS_COLOR[status as OrderStatus] || '#FFA000';
 };
 
 export const getPaymentMethodLabel = (method: string) => {

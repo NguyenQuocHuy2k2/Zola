@@ -80,7 +80,8 @@ public class ProductServiceImpl implements ProductService {
 
         boolean isFirst = product.getImages().isEmpty();
         for (MultipartFile file : files) {
-            String imageUrl = cloudinaryService.uploadImage(file, "zola/products");
+            String uniqueSuffix = java.util.UUID.randomUUID().toString().substring(0, 8);
+            String imageUrl = cloudinaryService.uploadImage(file, "zola/products", "product_" + productId + "_" + uniqueSuffix);
             ProductImage image = ProductImage.builder()
                     .imageUrl(imageUrl)
                     .isPrimary(isFirst)

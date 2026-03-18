@@ -3,6 +3,7 @@ package com.zola.dto.request.product;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,6 +19,9 @@ import java.util.List;
 public class ProductRequest {
     @NotBlank(message = "Product name is required")
     String name;
+
+    @Size(max = 255, message = "Brand must not exceed 255 characters")
+    String brand;
 
     String description;
 

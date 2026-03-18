@@ -18,6 +18,7 @@ public class OrderResponse {
     String id;
     String orderCode;
     OrderStatus status;
+    String customerName;
     BigDecimal totalAmount;
     String shippingAddress;
     String phoneNumber;

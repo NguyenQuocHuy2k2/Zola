@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,14 @@ public class OrderController {
     public ApiResponse<List<OrderResponse>> getMyOrders() {
         return ApiResponse.<List<OrderResponse>>builder()
                 .result(orderService.getMyOrders())
+                .build();
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ApiResponse<List<OrderResponse>> getAllOrders() {
+        return ApiResponse.<List<OrderResponse>>builder()
+                .result(orderService.getAllOrders())
                 .build();
     }
 

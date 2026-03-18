@@ -104,15 +104,21 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(orderConverter::toOrderResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public OrderResponse getOrderById(String id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
         
-        // Check if order belongs to current user (unless admin, but for simplicity now...)
         String userId = SecurityUtils.getCurrentUserId();
-        if (!order.getUser().getId().equals(userId)) {
-            // Check if user is admin (optional)
-            // throw new RuntimeException("Access denied");
+        // Check if order belongs to current user OR user is ADMIN
+        if (!order.getUser().getId().equals(userId) && !SecurityUtils.isAdmin()) {
+            throw new AppException(ErrorCode.FORBIDDEN);
         }
 
         return orderConverter.toOrderResponse(order);

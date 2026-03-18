@@ -31,6 +31,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) =>
       activeOpacity={0.8}
     >
       <Image source={{ uri: getProductPrimaryImage(product) }} style={styles.productImage} resizeMode="cover" />
+
       <View style={styles.productContent}>
         <Text numberOfLines={2} style={styles.productName}>{product.name}</Text>
         <View style={styles.priceContainer}>
@@ -53,9 +54,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 3,
+    overflow: 'hidden',
   },
   productImage: {
-    width: '100%',
+    width: COLUMN_WIDTH,
     height: COLUMN_WIDTH,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

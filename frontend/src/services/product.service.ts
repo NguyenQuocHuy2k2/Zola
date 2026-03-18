@@ -1,4 +1,6 @@
 import api from './api';
+import { Color, Size, Category } from './attribute.service';
+export { Color, Size, Category };
 
 export interface ProductImage {
     id: number;
@@ -23,24 +25,6 @@ export interface SearchFilters {
     size?: number;
 }
 
-export interface Color {
-    id: number;
-    name: string;
-    hexCode: string;
-}
-
-export interface Size {
-    id: number;
-    name: string;
-}
-
-export interface Category {
-    id: number;
-    name: string;
-    description?: string;
-    imageUrl?: string;
-}
-
 
 
 export interface ProductVariant {
@@ -48,6 +32,22 @@ export interface ProductVariant {
     size?: { id: number; name: string };
     color?: { id: number; name: string; hexCode: string };
     stockQuantity: number;
+}
+
+export interface CreateProductVariantDto {
+    sizeId: number;
+    colorId: number;
+    stockQuantity: number;
+}
+
+export interface CreateProductDto {
+    name: string;
+    description: string;
+    basePrice: number;
+    status: string;
+    brand: string;
+    categoryId: number;
+    variants: CreateProductVariantDto[];
 }
 
 export interface Product {
@@ -127,5 +127,63 @@ export const productService = {
     async getHotProducts(): Promise<Product[]> {
         const response = await api.get('/products/hot-products');
         return response.data.result;
+    },
+
+    // Admin: Create product (Two-step process: JSON then Image Upload)
+    async createProduct(productData: CreateProductDto, images: any[]): Promise<Product> {
+        // 1. Create product (JSON)
+        const response = await api.post('/products', productData);
+        const createdProduct = response.data.result;
+
+        // 2. Upload images if any
+        if (images && images.length > 0) {
+            try {
+                await this.uploadProductImages(createdProduct.id, images);
+                // Return updated product with images
+                return await this.getProductById(createdProduct.id);
+            } catch (error) {
+                console.error('Failed to upload images after product creation', error);
+                // Still return the created product even if image upload fails
+                return createdProduct;
+            }
+        }
+
+        return createdProduct;
+    },
+
+    // Admin: Update basic product info
+    async updateProduct(id: string | number, productData: any): Promise<Product> {
+        const response = await api.put(`/products/${id}`, productData);
+        return response.data.result;
+    },
+
+    // Admin: Update stock
+    async updateProductStock(id: string | number, stockQuantity: number): Promise<ProductVariant> {
+        const response = await api.put(`/products/variants/${id}/stock`, null, {
+            params: { stockQuantity }
+        });
+        return response.data.result;
+    },
+
+    // Admin: Upload additional images
+    async uploadProductImages(productId: string | number, images: any[]): Promise<ProductImage[]> {
+        const formData = new FormData();
+        images.forEach(image => {
+            formData.append('files', {
+                uri: image.uri,
+                type: image.mimeType || 'image/jpeg',
+                name: image.fileName || `additional_image_${Date.now()}.jpg`,
+            } as any);
+        });
+
+        const response = await api.post(`/products/${productId}/images`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data.result;
+    },
+
+    // Admin: Delete product
+    async deleteProduct(id: string | number): Promise<void> {
+        await api.delete(`/products/${id}`);
     },
 };

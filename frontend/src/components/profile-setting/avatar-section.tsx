@@ -17,9 +17,9 @@ export const AvatarSection: React.FC<AvatarSectionProps> = ({
     onPickAvatar,
 }) => {
     return (
-        <TouchableOpacity 
-            style={styles.avatarContainer} 
-            onPress={onPickAvatar} 
+        <TouchableOpacity
+            style={styles.avatarContainer}
+            onPress={onPickAvatar}
             disabled={uploadingAvatar}
         >
             <Avatar.Image

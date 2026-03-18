@@ -3,39 +3,22 @@ import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { adminOrderService, AdminOrder, AdminOrderStatus } from '@/services/admin.service';
+import { orderService, Order, OrderStatus } from '@/services/order.service';
 import { formatPrice } from '@/utils/format';
+import OrderStatusTabs from '@/components/orders/order-status-tabs';
 
-const STATUS_LABEL: Record<AdminOrderStatus, string> = {
-    NEW: 'Mới', CONFIRMED: 'Xác nhận', PREPARING: 'Chuẩn bị',
-    DELIVERING: 'Đang giao', DELIVERED: 'Đã giao', CANCELLED: 'Đã hủy',
-};
-
-const STATUS_COLOR: Record<AdminOrderStatus, string> = {
-    NEW: '#3B82F6', CONFIRMED: '#8B5CF6', PREPARING: '#F59E0B',
-    DELIVERING: '#06B6D4', DELIVERED: '#388E3C', CANCELLED: '#D32F2F',
-};
-
-const FILTER_TABS: { value: AdminOrderStatus | 'ALL'; label: string }[] = [
-    { value: 'ALL', label: 'Tất cả' },
-    { value: 'NEW', label: 'Mới' },
-    { value: 'CONFIRMED', label: 'Xác nhận' },
-    { value: 'PREPARING', label: 'Chuẩn bị' },
-    { value: 'DELIVERING', label: 'Đang giao' },
-    { value: 'DELIVERED', label: 'Đã giao' },
-    { value: 'CANCELLED', label: 'Hủy' },
-];
+import { STATUS_LABEL, STATUS_COLOR } from '@/constants/order';
 
 
-function OrderCard({ order, onPress }: { order: AdminOrder; onPress: () => void }) {
-    const itemCount = order.items.reduce((sum, i) => sum + i.quantity, 0);
+function OrderCard({ order, onPress }: { order: Order; onPress: () => void }) {
+    const itemCount = order.items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
 
     return (
         <TouchableOpacity style={styles.orderCard} onPress={onPress} activeOpacity={0.8}>
             {/* Header */}
             <View style={styles.cardHeader}>
                 <Text style={styles.orderIdText}>
-                    Order #{order.id.replace('order_admin_', '').padStart(4, '0')}
+                    Order #{order.orderCode}
                 </Text>
                 <Text style={styles.orderDateText}>
                     {new Date(order.createdAt).toLocaleDateString('vi-VN')}
@@ -45,16 +28,16 @@ function OrderCard({ order, onPress }: { order: AdminOrder; onPress: () => void 
             {/* Customer info */}
             <View style={styles.cardInfoRow}>
                 <Text style={styles.infoLabel}>Khách hàng:</Text>
-                <Text style={styles.infoValue}>{order.customerName}</Text>
+                <Text style={styles.infoValue}>{order.customerName || 'N/A'}</Text>
             </View>
             <View style={styles.cardInfoRow}>
                 <Text style={styles.infoLabel}>Điện thoại:</Text>
-                <Text style={styles.infoValue}>{order.customerPhone}</Text>
+                <Text style={styles.infoValue}>{order.phoneNumber}</Text>
             </View>
             <View style={styles.cardInfoRow}>
                 <Text style={styles.infoLabel}>Địa chỉ:</Text>
                 <Text style={[styles.infoValue, { flex: 1, textAlign: 'right' }]} numberOfLines={1}>
-                    {order.address}
+                    {order.shippingAddress}
                 </Text>
             </View>
 
@@ -68,7 +51,7 @@ function OrderCard({ order, onPress }: { order: AdminOrder; onPress: () => void 
                 </View>
                 <View style={styles.rowRight}>
                     <Text style={styles.infoLabel}>Tổng:</Text>
-                    <Text style={styles.subtotalValue}>{formatPrice(order.total)}</Text>
+                    <Text style={styles.subtotalValue}>{formatPrice(order.totalAmount)}</Text>
                 </View>
             </View>
 
@@ -88,51 +71,37 @@ function OrderCard({ order, onPress }: { order: AdminOrder; onPress: () => void 
 export default function AdminOrders() {
     const theme = useTheme();
     const router = useRouter();
-    const [orders, setOrders] = useState<AdminOrder[]>([]);
-    const [filter, setFilter] = useState<AdminOrderStatus | 'ALL'>('ALL');
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [filter, setFilter] = useState<OrderStatus | 'ALL'>('ALL');
 
-    const loadOrders = useCallback(() => {
-        setOrders(adminOrderService.getAll());
+    const loadOrders = useCallback(async () => {
+        const data = await orderService.getAllOrders();
+        setOrders(data);
     }, []);
 
-    useFocusEffect(loadOrders);
+    useFocusEffect(useCallback(() => {
+        loadOrders();
+    }, [loadOrders]));
 
     const filtered = filter === 'ALL' ? orders : orders.filter(o => o.status === filter);
 
+    const counts = {
+        ALL: orders.length,
+        PENDING: orders.filter(o => o.status === 'PENDING').length,
+        CONFIRMED: orders.filter(o => o.status === 'CONFIRMED').length,
+        PREPARING: orders.filter(o => o.status === 'PREPARING').length,
+        SHIPPING: orders.filter(o => o.status === 'SHIPPING').length,
+        RECEIVED: orders.filter(o => o.status === 'RECEIVED').length,
+        CANCELLED: orders.filter(o => o.status === 'CANCELLED').length,
+    };
+
     return (
         <SafeAreaView style={styles.safe}>
-            {/* Filter tabs */}
-            <View style={styles.tabsContainer}>
-                <FlatList
-                    horizontal
-                    data={FILTER_TABS}
-                    keyExtractor={item => item.value}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.tabsListContent}
-                    renderItem={({ item: tab }) => {
-                        const isActive = filter === tab.value;
-                        const count = tab.value === 'ALL'
-                            ? orders.length
-                            : orders.filter(o => o.status === tab.value).length;
-                        return (
-                            <TouchableOpacity
-                                onPress={() => setFilter(tab.value)}
-                                style={[
-                                    styles.tabChip,
-                                    isActive
-                                        ? { backgroundColor: theme.colors.primary }
-                                        : { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#E0E0E0' },
-                                ]}
-                                activeOpacity={0.8}
-                            >
-                                <Text style={isActive ? styles.activeTabText : styles.inactiveTabText}>
-                                    {tab.label} ({count})
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    }}
-                />
-            </View>
+            <OrderStatusTabs 
+                activeTab={filter} 
+                onTabChange={(tab) => setFilter(tab as any)} 
+                counts={counts}
+            />
 
             <FlatList
                 data={filtered}
@@ -140,7 +109,7 @@ export default function AdminOrders() {
                 renderItem={({ item }) => (
                     <OrderCard
                         order={item}
-                        onPress={() => router.push({ pathname: '/(admin)/order/[id]', params: { id: item.id } })}
+                        onPress={() => router.push({ pathname: '/order/[id]' as any, params: { id: item.id } })}
                     />
                 )}
                 showsVerticalScrollIndicator={false}
@@ -157,14 +126,6 @@ export default function AdminOrders() {
 
 const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: '#FAFAFA' },
-    tabsContainer: { paddingVertical: 12, backgroundColor: '#FAFAFA' },
-    tabsListContent: { paddingHorizontal: 16, gap: 8 },
-    tabChip: {
-        flexDirection: 'row', alignItems: 'center',
-        borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
-    },
-    activeTabText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
-    inactiveTabText: { color: '#666', fontSize: 13 },
     listContent: { padding: 16, paddingBottom: 24 },
 
     orderCard: {

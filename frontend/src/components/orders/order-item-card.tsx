@@ -29,9 +29,9 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
                 <View style={styles.productSummaryContainer}>
                     {item.items.map((orderItem, index) => (
                         <View key={index} style={[styles.summaryItemRow, index < item.items.length - 1 && styles.summaryItemDivider]}>
-                            <Image 
-                                source={{ uri: orderItem.imageUrl }} 
-                                style={styles.summaryItemImage} 
+                            <Image
+                                source={{ uri: orderItem.imageUrl }}
+                                style={styles.summaryItemImage}
                                 resizeMode="cover"
                             />
                             <View style={styles.summaryItemContent}>

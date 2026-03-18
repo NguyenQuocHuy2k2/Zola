@@ -20,6 +20,7 @@ export interface Order {
     items: OrderItem[];
     totalAmount: number;
     status: OrderStatus;
+    customerName?: string;
     shippingAddress: string;
     phoneNumber: string;
     paymentMethod: PaymentMethod;
@@ -70,6 +71,26 @@ export const orderService = {
         } catch (error) {
             console.error('Cancel order failed', error);
             throw error;
+        }
+    },
+
+    async getAllOrders(): Promise<Order[]> {
+        try {
+            const response = await api.get('/orders/admin');
+            return response.data.result;
+        } catch (error) {
+            console.error('Fetch all orders failed', error);
+            return [];
+        }
+    },
+
+    async updateOrderStatus(id: string, status: OrderStatus): Promise<Order | null> {
+        try {
+            const response = await api.patch(`/orders/${id}/status`, null, { params: { status } });
+            return response.data.result;
+        } catch (error) {
+            console.error('Update order status failed', error);
+            return null;
         }
     }
 };

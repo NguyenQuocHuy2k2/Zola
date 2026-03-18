@@ -9,6 +9,7 @@ import java.util.List;
 public interface OrderService {
     OrderResponse checkout(OrderRequest request);
     List<OrderResponse> getMyOrders();
+    List<OrderResponse> getAllOrders();
     OrderResponse getOrderById(String id);
     OrderResponse updateStatus(String id, OrderStatus status);
     void cancelOrder(String id);

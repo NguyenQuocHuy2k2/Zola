@@ -127,7 +127,7 @@ export default function ProductSelectionModal({
                             <View style={styles.quantitySection}>
                                 <Text style={styles.sectionTitle}>Số lượng</Text>
                                 <View style={styles.quantityPill}>
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         style={[styles.quantityBtn, quantity <= 1 && { opacity: 0.3 }]}
                                         onPress={() => setQuantity(Math.max(1, quantity - 1))}
                                         disabled={quantity <= 1}
@@ -135,7 +135,7 @@ export default function ProductSelectionModal({
                                         <IconButton icon="minus" size={20} />
                                     </TouchableOpacity>
                                     <Text style={styles.quantityText}>{quantity}</Text>
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         style={[styles.quantityBtn, (selectedVariant ? quantity >= selectedVariant.stockQuantity : true) && { opacity: 0.3 }]}
                                         onPress={() => setQuantity(quantity + 1)}
                                         disabled={selectedVariant ? quantity >= selectedVariant.stockQuantity : true}
@@ -155,8 +155,8 @@ export default function ProductSelectionModal({
                                 buttonColor="#528F72"
                                 labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
                             >
-                                {!selectedVariant 
-                                    ? 'Vui lòng chọn phân loại' 
+                                {!selectedVariant
+                                    ? 'Vui lòng chọn phân loại'
                                     : (selectedVariant.stockQuantity === 0 ? 'Hết hàng' : 'Thêm vào giỏ')}
                             </Button>
                         </View>

@@ -44,7 +44,7 @@ export default function ProductDetailScreen() {
     const [isReviewsExpanded, setIsReviewsExpanded] = useState(true);
     const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
     const [selectionModalVisible, setSelectionModalVisible] = useState(false);
-    
+
     // Status Modal State
     const [statusModalVisible, setStatusModalVisible] = useState(false);
     const [statusType, setStatusType] = useState<StatusType>('success');
@@ -53,7 +53,6 @@ export default function ProductDetailScreen() {
 
     useEffect(() => {
         if (id) loadProduct();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const loadProduct = async () => {
@@ -67,6 +66,8 @@ export default function ProductDetailScreen() {
             setProduct(data);
             setReviews(revs);
             setIsFavorite(liked);
+
+            console.log(data);
 
             // Default selected image (primary first)
             const primaryImg =
@@ -422,7 +423,7 @@ export default function ProductDetailScreen() {
                 />
             )}
 
-            <StatusModal 
+            <StatusModal
                 visible={statusModalVisible}
                 type={statusType}
                 title={statusTitle}
@@ -522,9 +523,9 @@ const styles = StyleSheet.create({
         gap: 12,
         flexWrap: "wrap",
     },
-    colorCircle: { 
-        width: 32, 
-        height: 32, 
+    colorCircle: {
+        width: 32,
+        height: 32,
         borderRadius: 16,
         borderWidth: 1,
         borderColor: 'transparent',

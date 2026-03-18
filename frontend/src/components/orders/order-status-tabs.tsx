@@ -7,9 +7,10 @@ import { TABS } from '@/utils/order';
 interface OrderStatusTabsProps {
     activeTab: string;
     onTabChange: (tab: string) => void;
+    counts?: Record<string, number>;
 }
 
-const OrderStatusTabs: React.FC<OrderStatusTabsProps> = ({ activeTab, onTabChange }) => {
+const OrderStatusTabs: React.FC<OrderStatusTabsProps> = ({ activeTab, onTabChange, counts }) => {
     const theme = useTheme();
 
     return (
@@ -22,6 +23,8 @@ const OrderStatusTabs: React.FC<OrderStatusTabsProps> = ({ activeTab, onTabChang
                 keyExtractor={item => item.value}
                 renderItem={({ item }) => {
                     const isActive = activeTab === item.value;
+                    const count = counts ? counts[item.value] : undefined;
+
                     return (
                         <TouchableOpacity
                             onPress={() => onTabChange(item.value)}
@@ -41,6 +44,7 @@ const OrderStatusTabs: React.FC<OrderStatusTabsProps> = ({ activeTab, onTabChang
                             />
                             <Text style={isActive ? styles.activeTabText : styles.inactiveTabText}>
                                 {item.label}
+                                {count !== undefined ? ` (${count})` : ''}
                             </Text>
                         </TouchableOpacity>
                     );

@@ -33,36 +33,12 @@ export default function AdminLayout() {
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="clipboard-list" size={24} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="feedbacks/index"
-        options={{
-          title: 'Phản hồi',
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="message-draw" size={24} color={color} />,
-        }}
-      />
-       <Tabs.Screen
-        name="attributes/index"
-        options={{
-          title: 'Thuộc tính',
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="tune" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="product-form/index"
-        options={{
-          href: null,
-          headerShown: false,
-          tabBarStyle: { display: 'none' },
-        }}
-      />
-      <Tabs.Screen
-        name="order/[id]/index"
-        options={{
-          href: null,
-          headerShown: false,
-          tabBarStyle: { display: 'none' },
-        }}
-      />
+      {/* Hidden sub-pages */}
+      <Tabs.Screen name="index" options={{ href: null }} />
+      <Tabs.Screen name="products/create/index" options={{ href: null }} />
+      <Tabs.Screen name="products/[id]/index" options={{ href: null }} />
+      <Tabs.Screen name="products/[id]/variant/index" options={{ href: null }} />
+      <Tabs.Screen name="order/[id]/index" options={{ href: null }} />
     </Tabs>
   );
 }

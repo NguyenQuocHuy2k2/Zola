@@ -1,0 +1,9 @@
+// ...existing code...
+const OrderStatus = {
+  Pending: 'PENDING',
+  Confirmed: 'CONFIRMED',
+  // ...
+} as const;
+export default OrderStatus;
+// ...existing code...
+

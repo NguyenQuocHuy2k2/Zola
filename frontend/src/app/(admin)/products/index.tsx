@@ -47,11 +47,6 @@ export default function AdminProducts() {
                 <View style={styles.productLayout}>
                     <View style={styles.imageWrapper}>
                         <Image source={{ uri: primaryImage || 'https://via.placeholder.com/150' }} style={styles.img} />
-                        {item.variants && item.variants.length > 0 && (
-                            <Chip compact style={styles.variantBadge} textStyle={{ fontSize: 10 }}>
-                                {item.variants.length} biến thể
-                            </Chip>
-                        )}
                     </View>
                     <View style={styles.infoContainer}>
                         <View style={styles.info}>

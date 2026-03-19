@@ -44,33 +44,37 @@ export default function AdminProducts() {
 
         return (
             <TouchableOpacity style={styles.card} onPress={() => router.push(`/products/${item.id}`)}>
-                <View style={styles.imageContainer}>
-                    <Image source={{ uri: primaryImage || 'https://via.placeholder.com/150' }} style={styles.img} />
-                    {item.variants && item.variants.length > 0 && (
-                        <Chip compact style={styles.variantBadge} textStyle={{ fontSize: 10 }}>
-                            {item.variants.length} biến thể
-                        </Chip>
-                    )}
-                </View>
-                <View style={styles.info}>
-                    <Text variant="bodyLarge" numberOfLines={2} style={{ fontWeight: '600', marginBottom: 4 }}>{item.name}</Text>
-                    <Text variant="titleMedium" style={{ color: theme.colors.primary, fontWeight: '700' }}>
-                        {item.basePrice.toLocaleString('vi-VN')}đ
-                    </Text>
-                    <View style={styles.meta}>
-                        <Chip compact icon="tag-outline" style={styles.chip} textStyle={{ fontSize: 11 }}>
-                            {item.category?.name || '—'}
-                        </Chip>
-                        <View style={styles.stockBadge}>
-                            <Text variant="bodySmall" style={styles.stockText}>Tồn: {totalStock}</Text>
+                <View style={styles.productLayout}>
+                    <View style={styles.imageWrapper}>
+                        <Image source={{ uri: primaryImage || 'https://via.placeholder.com/150' }} style={styles.img} />
+                        {item.variants && item.variants.length > 0 && (
+                            <Chip compact style={styles.variantBadge} textStyle={{ fontSize: 10 }}>
+                                {item.variants.length} biến thể
+                            </Chip>
+                        )}
+                    </View>
+                    <View style={styles.infoContainer}>
+                        <View style={styles.info}>
+                            <Text variant="bodyLarge" numberOfLines={2} style={{ fontWeight: '600', marginBottom: 4 }}>{item.name}</Text>
+                            <Text variant="titleMedium" style={{ color: theme.colors.primary, fontWeight: '700' }}>
+                                {item.basePrice.toLocaleString('vi-VN')}đ
+                            </Text>
+                            <View style={styles.meta}>
+                                <Chip compact icon="tag-outline" style={styles.chip} textStyle={{ fontSize: 11 }}>
+                                    {item.category?.name || '—'}
+                                </Chip>
+                                <View style={styles.stockBadge}>
+                                    <Text variant="bodySmall" style={styles.stockText}>Tồn: {totalStock}</Text>
+                                </View>
+                            </View>
                         </View>
+                        <IconButton
+                            icon="chevron-right"
+                            size={20}
+                            style={styles.arrowIcon}
+                        />
                     </View>
                 </View>
-                <IconButton
-                    icon="chevron-right"
-                    size={20}
-                    style={styles.arrowIcon}
-                />
             </TouchableOpacity>
         );
     };
@@ -115,18 +119,20 @@ const styles = StyleSheet.create({
     search: { marginBottom: 8, backgroundColor: '#fff' },
     count: { color: '#888', marginBottom: 8 },
     card: {
-        flexDirection: 'row',
         backgroundColor: '#fff',
         borderRadius: 12,
         padding: 12,
-        alignItems: 'center',
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
     },
-    imageContainer: {
+    productLayout: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    imageWrapper: {
         position: 'relative',
         width: 80,
         height: 80,
@@ -139,13 +145,21 @@ const styles = StyleSheet.create({
     },
     variantBadge: {
         position: 'absolute',
-        top: 4,
-        right: 4,
+        bottom: -8,
+        left: 0,
+        right: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        alignSelf: 'center',
+        width: '70%',
+    },
+    infoContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
     },
     info: {
         flex: 1,
-        marginLeft: 12,
     },
     meta: {
         flexDirection: 'row',
@@ -171,7 +185,7 @@ const styles = StyleSheet.create({
     },
     arrowIcon: {
         margin: 0,
-        marginLeft: 4,
+        alignSelf: 'center',
     },
     separator: { height: 8 },
     fab: { position: 'absolute', right: 16, bottom: 24 },

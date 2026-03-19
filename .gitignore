@@ -52,3 +52,5 @@ app-example
 .DS_Store
 
 .env
+
+.claude

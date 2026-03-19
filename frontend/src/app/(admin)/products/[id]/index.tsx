@@ -1,18 +1,29 @@
-import { useState, useEffect, useCallback } from 'react';
-import { View, Alert, TouchableOpacity } from 'react-native';
-import { Text, Button, useTheme, Card, ActivityIndicator, IconButton } from 'react-native-paper';
+import { useState, useCallback } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { productService, Product, CreateProductDto } from '@/services/product.service';
+import {
+    productService,
+    Product,
+    CreateProductDto,
+} from '@/services/product.service';
 import { ProductForm } from '@/components/admin/products/product-form';
+import { StockSummary } from '@/components/admin/products/stock-summary';
+import StatusModal, { StatusType } from '@/components/ui/status-modal';
 
 export default function EditProduct() {
-    const theme = useTheme();
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
 
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [product, setProduct] = useState<Product | null>(null);
+    const [statusModal, setStatusModal] = useState<{
+        visible: boolean;
+        type: StatusType;
+        title: string;
+        message: string;
+        buttonLabel?: string;
+    }>({ visible: false, type: 'info', title: '', message: '' });
 
     const loadProduct = async () => {
         if (!id) return;
@@ -21,15 +32,22 @@ export default function EditProduct() {
             const data = await productService.getProductById(id);
             setProduct(data);
         } catch (error) {
-            Alert.alert('Lỗi', 'Không thể tải thông tin sản phẩm');
+            setStatusModal({
+                visible: true,
+                type: 'error',
+                title: 'Lỗi',
+                message: 'Không thể tải thông tin sản phẩm',
+            });
         } finally {
             setLoading(false);
         }
     };
 
-    useFocusEffect(useCallback(() => {
-        loadProduct();
-    }, [id]));
+    useFocusEffect(
+        useCallback(() => {
+            loadProduct();
+        }, [id]),
+    );
 
     const handleSave = async (productData: CreateProductDto, images: any[]) => {
         if (!id) return;
@@ -39,58 +57,47 @@ export default function EditProduct() {
             if (images.length > 0) {
                 await productService.uploadProductImages(id, images);
             }
-            Alert.alert('Thành công', 'Đã cập nhật sản phẩm', [{ text: 'OK', onPress: () => router.back() }]);
+            setStatusModal({
+                visible: true,
+                type: 'success',
+                title: 'Thành công',
+                message: 'Đã cập nhật sản phẩm',
+                buttonLabel: 'OK',
+            });
         } catch (error) {
             console.error(error);
-            Alert.alert('Lỗi', 'Đã có lỗi xảy ra khi lưu sản phẩm');
+            setStatusModal({
+                visible: true,
+                type: 'error',
+                title: 'Lỗi',
+                message: 'Đã có lỗi xảy ra khi lưu sản phẩm',
+            });
         } finally {
             setSaving(false);
         }
     };
 
-    const handleDelete = async () => {
-        Alert.alert(
-            'Xóa sản phẩm',
-            'Bạn có chắc muốn xóa sản phẩm này? Hành động này không thể hoàn tác.',
-            [
-                { text: 'Hủy', style: 'cancel' },
-                {
-                    text: 'Xóa',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await productService.deleteProduct(id);
-                            router.push('/products');
-                        } catch (error) {
-                            Alert.alert('Lỗi', 'Không thể xóa sản phẩm này');
-                        }
-                    }
-                }
-            ]
-        );
+    const handleStatusModalClose = () => {
+        const currentType = statusModal.type;
+        setStatusModal((prev) => ({ ...prev, visible: false }));
+        if (currentType === 'success') {
+            router.push('/(admin)/products');
+        }
     };
 
     if (loading || !product) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
                 <ActivityIndicator size="large" />
             </View>
         );
     }
-
-    const StockSummary = (
-        <Card style={[{ marginBottom: 16, borderRadius: 12, elevation: 2, backgroundColor: theme.colors.primaryContainer }]}>
-            <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View>
-                    <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>Kho hàng & Biến thể</Text>
-                    <Text variant="bodySmall">Sản phẩm hiện có {product.variants?.length || 0} biến thể</Text>
-                </View>
-                <Button mode="contained" icon="package-variant" onPress={() => router.push(`/products/${id}/variant`)}>
-                    Nhập kho
-                </Button>
-            </Card.Content>
-        </Card>
-    );
 
     return (
         <View style={{ flex: 1 }}>
@@ -100,42 +107,21 @@ export default function EditProduct() {
                 onSave={handleSave}
                 loading={saving}
                 onCancel={() => router.push('/(admin)/products')}
-                extraContent={StockSummary}
+                extraContent={
+                    <StockSummary
+                        variantCount={product.variants?.length || 0}
+                        productId={id}
+                    />
+                }
             />
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 16, marginTop: 16 }}>
-                <TouchableOpacity
-                    style={{
-                        backgroundColor: theme.colors.primary,
-                        paddingHorizontal: 16,
-                        paddingVertical: 12,
-                        borderRadius: 8,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                    onPress={() => router.push(`/products/${id}/edit`)}
-                >
-                    <IconButton icon="pencil-outline" iconColor="#fff" size={20} />
-                    <Text style={{ color: '#fff', marginLeft: 8, fontWeight: '500' }}>Chỉnh sửa</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={{
-                        backgroundColor: '#EF4444',
-                        paddingHorizontal: 16,
-                        paddingVertical: 12,
-                        borderRadius: 8,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                    onPress={handleDelete}
-                >
-                    <IconButton icon="trash-can-outline" iconColor="#fff" size={20} />
-                    <Text style={{ color: '#fff', marginLeft: 8, fontWeight: '500' }}>Xóa</Text>
-                </TouchableOpacity>
-            </View>
+            <StatusModal
+                visible={statusModal.visible}
+                type={statusModal.type}
+                title={statusModal.title}
+                message={statusModal.message}
+                buttonLabel={statusModal.buttonLabel}
+                onClose={handleStatusModalClose}
+            />
         </View>
     );
 }

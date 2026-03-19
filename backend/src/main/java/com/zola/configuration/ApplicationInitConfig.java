@@ -101,7 +101,7 @@ public class ApplicationInitConfig {
                         .username("vuthevy1209")
                         .password(passwordEncoder.encode("Password123@"))
                         .email("vuthevy12092004@gmail.com")
-                        .phone("0999999999")
+                        .phone("0354802825")
                         .firstName("Vy")
                         .lastName("Vu")
                         .role(roleRepository.findByRoleName(PredefinedRole.USER))

@@ -1,5 +1,9 @@
 # Coding Standards
 - ALWAYS use 4 spaces for indentation in all file types (.tsx, .ts, .java, .cs, .json).
-- NEVER use 2-space indentation or tabs.
+- NEVER use 2-space indentation.
 - When editing existing files, if you see 2-space indentation, your priority is to convert the entire file to 4-space indentation first.
 - Strictly follow this rule even if the project's default seems different, unless I explicitly say otherwise.
+
+# File naming rules
+- Backend: CamelCase (Example: UserController.java)
+- Frontend: Kebab-case (Example: product-card.tsx)

@@ -12,6 +12,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductVariantRequest {
+    Long id;
+
     Long sizeId;
 
     Long colorId;
@@ -20,3 +22,4 @@ public class ProductVariantRequest {
     @Min(value = 0, message = "Stock quantity cannot be negative")
     Integer stockQuantity;
 }
+    

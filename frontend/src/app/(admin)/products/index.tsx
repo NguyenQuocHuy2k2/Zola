@@ -1,187 +1,97 @@
 import { useState, useCallback } from 'react';
-import { View, StyleSheet, FlatList, Alert, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { Text, useTheme, FAB, Searchbar, Chip, IconButton } from 'react-native-paper';
+import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { useTheme, FAB } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { productService, Product } from '@/services/product.service';
-import { attributeService, Category } from '@/services/attribute.service';
+import { productService, Product, SearchFilters } from '@/services/product.service';
+import ProductCard from '@/components/admin/products/product-card';
+import ProductListHeader from '@/components/admin/products/product-list-header';
 
 export default function AdminProducts() {
-    const theme = useTheme();
-    const router = useRouter();
-    const [products, setProducts] = useState<Product[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [search, setSearch] = useState('');
-    const [loading, setLoading] = useState(true);
+  const theme = useTheme();
+  const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [loading, setLoading] = useState(true);
 
-    const loadData = async () => {
-        setLoading(true);
-        try {
-            const [response, cats] = await Promise.all([
-                productService.getProducts(0, 100),
-                attributeService.getCategories()
-            ]);
-            setProducts(response.content || response); // Handle both PagedResponse and raw array
-            setCategories(cats);
-        } catch (error) {
-            console.error('Failed to load products', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const filters: SearchFilters = {
+        keyword: search,
+        status: statusFilter,
+        page: 0,
+        size: 100,
+      };
+      const response = await productService.searchProducts(filters);
+      setProducts(response.content || []);
+    } catch (error) {
+      console.error('Failed to load products', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useFocusEffect(useCallback(() => {
-        loadData();
-    }, []));
+  useFocusEffect(
+    useCallback(() => {
+      loadProducts();
+    }, [search, statusFilter])
+  );
 
-    const filtered = products.filter(p =>
-        p.name.toLowerCase().includes(search.toLowerCase())
-    );
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await productService.deleteProduct(productId);
+      setProducts((prev) =>
+        prev.filter((p) => p.id.toString() !== productId)
+      );
+    } catch (error) {
+      console.error('Failed to delete product', error);
+      throw error;
+    }
+  };
 
-    const renderItem = ({ item }: { item: Product }) => {
-        const primaryImage = item.images?.find(img => img.isPrimary)?.imageUrl || item.images?.[0]?.imageUrl;
-        const totalStock = item.variants?.reduce((sum, v) => sum + v.stockQuantity, 0) || 0;
-
-        return (
-            <TouchableOpacity style={styles.card} onPress={() => router.push(`/products/${item.id}`)}>
-                <View style={styles.productLayout}>
-                    <View style={styles.imageWrapper}>
-                        <Image source={{ uri: primaryImage || 'https://via.placeholder.com/150' }} style={styles.img} />
-                    </View>
-                    <View style={styles.infoContainer}>
-                        <View style={styles.info}>
-                            <Text variant="bodyLarge" numberOfLines={2} style={{ fontWeight: '600', marginBottom: 4 }}>{item.name}</Text>
-                            <Text variant="titleMedium" style={{ color: theme.colors.primary, fontWeight: '700' }}>
-                                {item.basePrice.toLocaleString('vi-VN')}đ
-                            </Text>
-                            <View style={styles.meta}>
-                                <Chip compact icon="tag-outline" style={styles.chip} textStyle={{ fontSize: 11 }}>
-                                    {item.category?.name || '—'}
-                                </Chip>
-                                <View style={styles.stockBadge}>
-                                    <Text variant="bodySmall" style={styles.stockText}>Tồn: {totalStock}</Text>
-                                </View>
-                            </View>
-                        </View>
-                        <IconButton
-                            icon="chevron-right"
-                            size={20}
-                            style={styles.arrowIcon}
-                        />
-                    </View>
-                </View>
-            </TouchableOpacity>
-        );
-    };
-
-    return (
-        <SafeAreaView style={styles.safe}>
-            <View style={styles.container}>
-                <Text variant="headlineSmall" style={styles.title}>Sản phẩm</Text>
-                <Searchbar
-                    placeholder="Tìm kiếm sản phẩm..."
-                    value={search}
-                    onChangeText={setSearch}
-                    style={styles.search}
-                />
-                <Text variant="bodySmall" style={styles.count}>{filtered.length} sản phẩm</Text>
-                {loading ? (
-                    <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 20 }} />
-                ) : (
-                    <FlatList
-                        data={filtered}
-                        keyExtractor={item => item.id.toString()}
-                        renderItem={renderItem}
-                        ItemSeparatorComponent={() => <View style={styles.separator} />}
-                        showsVerticalScrollIndicator={false}
-                    />
-                )}
-            </View>
-            <FAB
-                icon="plus"
-                style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-                color="#fff"
-                onPress={() => router.push('/products/create')}
-            />
-        </SafeAreaView>
-    );
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.container}>
+        <ProductListHeader
+          searchQuery={search}
+          onSearchChange={setSearch}
+          productCount={products.length}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+        />
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color={theme.colors.primary}
+            style={{ marginTop: 20 }}
+          />
+        ) : (
+          <FlatList
+            data={products}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <ProductCard product={item} onDelete={handleDeleteProduct} />
+            )}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </View>
+      <FAB
+        icon="plus"
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        color="#fff"
+        onPress={() => router.push('/products/create')}
+      />
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: '#FAFAFA' },
-    container: { flex: 1, padding: 16 },
-    title: { fontWeight: 'bold', marginBottom: 12 },
-    search: { marginBottom: 8, backgroundColor: '#fff' },
-    count: { color: '#888', marginBottom: 8 },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 12,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    productLayout: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    imageWrapper: {
-        position: 'relative',
-        width: 80,
-        height: 80,
-    },
-    img: {
-        width: 80,
-        height: 80,
-        borderRadius: 10,
-        backgroundColor: '#eee',
-    },
-    variantBadge: {
-        position: 'absolute',
-        bottom: -8,
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        alignSelf: 'center',
-        width: '70%',
-    },
-    infoContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-    },
-    info: {
-        flex: 1,
-    },
-    meta: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 6,
-        marginTop: 6,
-    },
-    chip: {
-        backgroundColor: '#E8F5E9',
-        alignSelf: 'flex-start',
-    },
-    stockBadge: {
-        backgroundColor: '#FFF3E0',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 4,
-    },
-    stockText: {
-        color: '#F57C00',
-        fontSize: 11,
-        fontWeight: '500',
-    },
-    arrowIcon: {
-        margin: 0,
-        alignSelf: 'center',
-    },
-    separator: { height: 8 },
-    fab: { position: 'absolute', right: 16, bottom: 24 },
+  safe: { flex: 1, backgroundColor: '#FAFAFA' },
+  container: { flex: 1, padding: 16 },
+  separator: { height: 8 },
+  fab: { position: 'absolute', right: 16, bottom: 24 },
 });

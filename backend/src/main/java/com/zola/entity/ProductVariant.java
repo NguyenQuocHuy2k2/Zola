@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @Builder
@@ -30,4 +32,7 @@ public class ProductVariant {
 
     @Column(name = "stock_quantity", nullable = false)
     Integer stockQuantity;
+
+    @Column(name = "deleted_at")
+    Instant deletedAt;
 }

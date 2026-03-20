@@ -80,8 +80,9 @@ export function ProductForm({ initialData, onSave, loading = false, title, onCan
 
     const validate = () => {
         const e: Record<string, string> = {};
-        if (!name.trim()) e.name = 'Tên không được để trống';
-        if (!price || isNaN(Number(price)) || Number(price) <= 0) e.price = 'Giá không hợp lệ';
+        if (!name.trim()) e.name = 'Tên sản phẩm không được để trống';
+        if (!brand.trim()) e.brand = 'Thương hiệu không được để trống';
+        if (!price || isNaN(Number(price)) || Number(price) <= 0) e.price = 'Giá bán không được để trống';
         if (!categoryId) e.categoryId = 'Vui lòng chọn danh mục';
         if (!initialData && images.length === 0) e.image = 'Cần ít nhất 1 ảnh sản phẩm';
 
@@ -154,7 +155,7 @@ export function ProductForm({ initialData, onSave, loading = false, title, onCan
                         <TextInput
                             label="Giá bán (VND) *"
                             value={price}
-                            onChangeText={setPrice}
+                            onChangeText={(text) => setPrice(text.replace(/[^0-9]/g, ''))}
                             mode="outlined"
                             keyboardType="numeric"
                             style={styles.input}

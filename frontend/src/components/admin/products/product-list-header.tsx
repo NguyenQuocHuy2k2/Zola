@@ -33,7 +33,7 @@ export default function ProductListHeader({
         <View style={styles.container}>
             <View style={styles.headerTop}>
                 <Text variant="headlineSmall" style={styles.title}>
-                    Sản phẩm
+                    Quản lý sản phẩm
                 </Text>
                 <View style={styles.countBadge}>
                     <Text variant="bodySmall" style={styles.countText}>

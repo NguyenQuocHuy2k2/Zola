@@ -177,13 +177,16 @@ export default function StockManagement() {
             />
 
             <View style={styles.header}>
+                <IconButton 
+                    icon="arrow-left" 
+                    size={28} 
+                    onPress={() => router.navigate(`/(admin)/products/${id}`)}
+                    style={styles.backButton}
+                />
                 <View style={styles.headerTitleContainer}>
                     <Text variant="headlineSmall" style={styles.headerTitle}>Nhập kho & Biến thể</Text>
                     <Text variant="bodySmall" style={styles.subTitle} numberOfLines={1}>{product?.name}</Text>
                 </View>
-                <TouchableOpacity onPress={() => router.navigate(`/(admin)/products/${id}`)} style={styles.closeButton}>
-                    <Text style={styles.closeButtonText}>Quay lại</Text>
-                </TouchableOpacity>
             </View>
 
             <ScrollView 
@@ -226,19 +229,27 @@ const styles = StyleSheet.create({
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
     header: { 
         flexDirection: 'row', 
-        justifyContent: 'space-between', 
         alignItems: 'center', 
-        paddingHorizontal: 20, 
-        paddingVertical: 16,
+        justifyContent: 'center',
+        paddingHorizontal: 16, 
+        paddingVertical: 12,
         backgroundColor: 'white',
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0'
+        borderBottomColor: '#F0F0F0',
+        position: 'relative',
+        minHeight: 64
     },
-    headerTitleContainer: { flex: 1 },
-    headerTitle: { fontWeight: 'bold', color: '#1E1E1E', fontSize: 20 },
-    subTitle: { color: '#8A8A8A', marginTop: 2, fontSize: 13 },
-    closeButton: { padding: 8 },
-    closeButtonText: { color: '#528F72', fontWeight: 'bold', fontSize: 15 },
+    headerTitleContainer: { 
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerTitle: { fontWeight: 'bold', color: '#1E1E1E', fontSize: 18, textAlign: 'center' },
+    subTitle: { color: '#8A8A8A', marginTop: 2, fontSize: 13, textAlign: 'center' },
+    backButton: {
+        position: 'absolute',
+        left: 4,
+        zIndex: 1,
+    },
     scrollContent: { padding: 16, paddingBottom: 40 },
     sectionHeader: { 
         flexDirection: 'row', 

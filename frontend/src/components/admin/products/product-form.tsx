@@ -110,8 +110,13 @@ export function ProductForm({ initialData, onSave, loading = false, title, onCan
         <SafeAreaView style={styles.safe}>
             <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
                 <View style={styles.header}>
-                    <Text variant="headlineSmall" style={{ fontWeight: 'bold' }}>{title}</Text>
-                    <Button onPress={onCancel}>Hủy</Button>
+                    <IconButton 
+                        icon="arrow-left" 
+                        size={28} 
+                        onPress={onCancel}
+                        style={styles.backButton}
+                    />
+                    <Text variant="headlineSmall" style={styles.headerTitle}>{title}</Text>
                 </View>
 
                 {extraContent}
@@ -243,7 +248,24 @@ export function ProductForm({ initialData, onSave, loading = false, title, onCan
 const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: '#FAFAFA' },
     container: { padding: 16, paddingBottom: 40 },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    header: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        marginBottom: 20,
+        position: 'relative',
+        height: 48,
+    },
+    headerTitle: { 
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        textAlign: 'center',
+    },
+    backButton: {
+        position: 'absolute',
+        left: -10,
+        zIndex: 1,
+    },
     card: { marginBottom: 16, backgroundColor: 'white', borderRadius: 12, elevation: 2 },
     sectionTitle: { fontWeight: 'bold', marginBottom: 20, color: '#1A1A1A' },
     input: { marginBottom: 16, backgroundColor: '#fff' },

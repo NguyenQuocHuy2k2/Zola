@@ -1,10 +1,14 @@
 import { useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { Text, TextInput, Button, useTheme, IconButton, Card, Chip, Portal, Modal } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { Text, Button, useTheme, IconButton } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { productService, Product, CreateProductDto, CreateProductVariantDto } from '@/services/product.service';
+import { productService, Product, ProductVariant } from '@/services/product.service';
 import { attributeService, Size, Color } from '@/services/attribute.service';
+import { VariantModal } from '@/components/admin/products/variant-modal';
+import { VariantTable } from '@/components/admin/products/variant-table';
+import ConfirmModal from '@/components/ui/confirm-modal';
+import StatusModal, { StatusType } from '@/components/ui/status-modal';
 
 export default function StockManagement() {
     const theme = useTheme();
@@ -14,13 +18,33 @@ export default function StockManagement() {
     const [product, setProduct] = useState<Product | null>(null);
     const [availableSizes, setAvailableSizes] = useState<Size[]>([]);
     const [availableColors, setAvailableColors] = useState<Color[]>([]);
-    const [variants, setVariants] = useState<CreateProductVariantDto[]>([]);
+    const [variants, setVariants] = useState<ProductVariant[]>([]);
     
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    
+    // Modal state
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-    const [tempSizeId, setTempSizeId] = useState<number | null>(null);
-    const [tempColorId, setTempColorId] = useState<number | null>(null);
+    const [editingVariantId, setEditingVariantId] = useState<number | null>(null);
+    const [initialModalData, setInitialModalData] = useState({ sizeId: null as number | null, colorId: null as number | null, quantity: '0' });
+
+    // Custom Modal State
+    const [confirmModal, setConfirmModal] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+    });
+    const [statusModal, setStatusModal] = useState({
+        visible: false,
+        type: 'success' as StatusType,
+        title: '',
+        message: '',
+    });
+
+    const showStatus = (type: StatusType, title: string, message: string) => {
+        setStatusModal({ visible: true, type, title, message });
+    };
 
     const loadData = async () => {
         setLoading(true);
@@ -33,13 +57,9 @@ export default function StockManagement() {
             setProduct(p);
             setAvailableSizes(szs);
             setAvailableColors(clrs);
-            setVariants(p.variants?.map(v => ({
-                sizeId: v.size?.id || 0,
-                colorId: v.color?.id || 0,
-                stockQuantity: v.stockQuantity
-            })) || []);
+            setVariants(p.variants || []);
         } catch (error) {
-            Alert.alert('Lỗi', 'Không thể tải dữ liệu kho hàng');
+            showStatus('error', 'Lỗi', 'Không thể tải dữ liệu kho hàng');
         } finally {
             setLoading(false);
         }
@@ -51,69 +71,75 @@ export default function StockManagement() {
 
     const openAddModal = () => {
         if (availableSizes.length === 0 || availableColors.length === 0) {
-            Alert.alert('Thiếu dữ liệu', 'Vui lòng cấu hình Kích cỡ và Màu sắc hệ thống trước.');
+            showStatus('warning', 'Thiếu dữ liệu', 'Vui lòng cấu hình Kích cỡ và Màu sắc hệ thống trước.');
             return;
         }
-        setTempSizeId(availableSizes[0].id);
-        setTempColorId(availableColors[0].id);
+        setEditingVariantId(null);
+        setInitialModalData({
+            sizeId: availableSizes[0].id,
+            colorId: availableColors[0].id,
+            quantity: '0'
+        });
         setIsAddModalVisible(true);
     };
 
-    const confirmAddVariant = () => {
-        if (!tempSizeId || !tempColorId) return;
-        
-        // Check if combination already exists
-        const exists = variants.find(v => v.sizeId === tempSizeId && v.colorId === tempColorId);
-        if (exists) {
-            Alert.alert('Lỗi', 'Biến thể này đã tồn tại trong danh sách.');
-            return;
-        }
-
-        setVariants([...variants, { sizeId: tempSizeId, colorId: tempColorId, stockQuantity: 0 }]);
-        setIsAddModalVisible(false);
+    const openEditModal = (variant: ProductVariant) => {
+        setEditingVariantId(variant.id);
+        setInitialModalData({
+            sizeId: variant.size?.id || null,
+            colorId: variant.color?.id || null,
+            quantity: variant.stockQuantity.toString()
+        });
+        setIsAddModalVisible(true);
     };
 
-    const updateVariant = (index: number, field: keyof CreateProductVariantDto, value: number) => {
-        const newVariants = [...variants];
-        newVariants[index][field] = value;
-        setVariants(newVariants);
-    };
-
-    const removeVariant = (index: number) => {
-        setVariants(variants.filter((_, i) => i !== index));
-    };
-
-    const handleSave = async () => {
-        if (variants.length === 0) {
-            Alert.alert('Lưu ý', 'Sản phẩm cần có ít nhất 1 biến thể');
-            return;
-        }
-
+    const handleSaveVariant = async (data: { sizeId: number; colorId: number; quantity: number }) => {
         setSaving(true);
         try {
-            const updateData: CreateProductDto = {
-                name: product!.name,
-                description: product!.description || '',
-                basePrice: product!.basePrice,
-                status: product!.status,
-                categoryId: product!.category.id,
-                brand: (product as any).brand || '',
-                variants: variants
-            };
-
-            await productService.updateProduct(id, updateData);
-            Alert.alert('Thành công', 'Đã cập nhật kho hàng', [{ text: 'OK', onPress: () => router.back() }]);
+            if (editingVariantId) {
+                await productService.updateVariantStock(editingVariantId, data.quantity);
+            } else {
+                const exists = variants.find(v => v.size?.id === data.sizeId && v.color?.id === data.colorId);
+                if (exists) {
+                    showStatus('error', 'Lỗi', 'Biến thể này đã tồn tại.');
+                    setSaving(false);
+                    return;
+                }
+                await productService.createVariant(id, {
+                    sizeId: data.sizeId,
+                    colorId: data.colorId,
+                    stockQuantity: data.quantity
+                });
+            }
+            await loadData();
+            setIsAddModalVisible(false);
         } catch (error) {
-            console.error(error);
-            Alert.alert('Lỗi', 'Không thể lưu thông tin kho hàng');
+            showStatus('error', 'Lỗi', 'Không thể lưu biến thể');
         } finally {
             setSaving(false);
         }
     };
 
+    const removeVariant = (variantId: number) => {
+        setConfirmModal({
+            visible: true,
+            title: 'Xác nhận xóa',
+            message: 'Bạn có chắc chắn muốn xóa biến thể này?',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, visible: false }));
+                try {
+                    await productService.deleteVariant(variantId);
+                    await loadData();
+                } catch (error) {
+                    showStatus('error', 'Lỗi', 'Không thể xóa biến thể');
+                }
+            }
+        });
+    };
+
     if (loading) {
         return (
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff'}}>
+            <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#2E7D32" />
             </View>
         );
@@ -121,80 +147,41 @@ export default function StockManagement() {
 
     return (
         <SafeAreaView style={styles.safe}>
-            <Portal>
-                <Modal
-                    visible={isAddModalVisible}
-                    onDismiss={() => setIsAddModalVisible(false)}
-                    contentContainerStyle={styles.modalContainer}
-                >
-                    <View style={styles.modalContent}>
-                        <Text variant="titleLarge" style={styles.modalTitle}>Thêm biến thể mới</Text>
-                        
-                        <View style={styles.modalSection}>
-                            <Text variant="labelLarge" style={styles.modalLabel}>Kích cỡ</Text>
-                            <View style={styles.optionsRow}>
-                                {availableSizes.map(s => (
-                                    <TouchableOpacity 
-                                        key={s.id} 
-                                        onPress={() => setTempSizeId(s.id)}
-                                        style={[
-                                            styles.sizeCircle,
-                                            tempSizeId === s.id && styles.sizeCircleSelected
-                                        ]}
-                                    >
-                                        <Text style={[
-                                            styles.sizeText,
-                                            tempSizeId === s.id && styles.sizeTextSelected
-                                        ]}>
-                                            {s.name}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
+            <VariantModal
+                visible={isAddModalVisible}
+                onDismiss={() => setIsAddModalVisible(false)}
+                editingVariantId={editingVariantId}
+                availableSizes={availableSizes}
+                availableColors={availableColors}
+                saving={saving}
+                onSave={handleSaveVariant}
+                initialData={initialModalData}
+            />
 
-                        <View style={styles.modalSection}>
-                            <Text variant="labelLarge" style={styles.modalLabel}>Màu sắc</Text>
-                            <View style={styles.optionsRow}>
-                                {availableColors.map(c => {
-                                    const isSelected = tempColorId === c.id;
-                                    const isWhite = c.hexCode?.toUpperCase() === '#FFFFFF' || c.hexCode?.toLowerCase() === 'white';
-                                    return (
-                                        <TouchableOpacity 
-                                            key={c.id} 
-                                            onPress={() => setTempColorId(c.id)}
-                                            style={[
-                                                styles.colorCircle,
-                                                { backgroundColor: c.hexCode || '#ccc' },
-                                                isWhite && styles.whiteColorCircle,
-                                                isSelected && styles.colorCircleSelected
-                                            ]}
-                                        />
-                                    );
-                                })}
-                            </View>
-                        </View>
+            <ConfirmModal
+                visible={confirmModal.visible}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(prev => ({ ...prev, visible: false }))}
+                confirmColor="#F44336"
+                icon="delete-outline"
+            />
 
-                        <View style={styles.modalActions}>
-                            <Button onPress={() => setIsAddModalVisible(false)} textColor="#666">Hủy</Button>
-                            <Button 
-                                mode="contained" 
-                                onPress={confirmAddVariant} 
-                                style={styles.confirmBtn}
-                            >
-                                Xác nhận
-                            </Button>
-                        </View>
-                    </View>
-                </Modal>
-            </Portal>
+            <StatusModal
+                visible={statusModal.visible}
+                type={statusModal.type}
+                title={statusModal.title}
+                message={statusModal.message}
+                onClose={() => setStatusModal(prev => ({ ...prev, visible: false }))}
+            />
 
             <View style={styles.header}>
                 <View style={styles.headerTitleContainer}>
                     <Text variant="headlineSmall" style={styles.headerTitle}>Nhập kho & Biến thể</Text>
                     <Text variant="bodySmall" style={styles.subTitle} numberOfLines={1}>{product?.name}</Text>
                 </View>
-                <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
+                <TouchableOpacity onPress={() => router.navigate(`/(admin)/products/${id}`)} style={styles.closeButton}>
                     <Text style={styles.closeButtonText}>Quay lại</Text>
                 </TouchableOpacity>
             </View>
@@ -216,54 +203,11 @@ export default function StockManagement() {
                     </Button>
                 </View>
 
-                {variants.map((v, index) => {
-                    const sizeName = availableSizes.find(s => s.id === v.sizeId)?.name || '—';
-                    const color = availableColors.find(c => c.id === v.colorId);
-                    
-                    return (
-                        <Card key={index} style={styles.variantCard}>
-                            <Card.Content style={styles.cardContent}>
-                                <View style={styles.cardHeader}>
-                                    <View style={styles.variantAttributes}>
-                                        <View style={styles.attributeTag}>
-                                            <Text style={styles.attributeTagLabel}>Size</Text>
-                                            <Text style={styles.attributeTagValue}>{sizeName}</Text>
-                                        </View>
-                                        <View style={styles.attributeTag}>
-                                            <View style={[styles.colorIndicator, { backgroundColor: color?.hexCode || '#ccc' }]} />
-                                            <Text style={styles.attributeTagValue}>{color?.name || '—'}</Text>
-                                        </View>
-                                    </View>
-                                    <IconButton 
-                                        icon="trash-can-outline" 
-                                        iconColor={theme.colors.error} 
-                                        onPress={() => removeVariant(index)} 
-                                        size={20}
-                                        style={styles.deleteIcon}
-                                    />
-                                </View>
-
-                                <View style={styles.stockSectionRoot}>
-                                    <View style={styles.stockLabelContainer}>
-                                        <IconButton icon="package-variant-closed" size={16} iconColor="#528F72" style={{margin: 0}} />
-                                        <Text variant="labelMedium" style={styles.stockLabel}>Tồn kho thực tế</Text>
-                                    </View>
-                                    <TextInput
-                                        value={v.stockQuantity.toString()}
-                                        onChangeText={(val) => updateVariant(index, 'stockQuantity', parseInt(val) || 0)}
-                                        keyboardType="numeric"
-                                        mode="flat"
-                                        style={styles.stockInput}
-                                        underlineColor="transparent"
-                                        activeUnderlineColor="#528F72"
-                                        placeholder="0"
-                                        dense
-                                    />
-                                </View>
-                            </Card.Content>
-                        </Card>
-                    );
-                })}
+                <VariantTable 
+                    variants={variants}
+                    onEdit={openEditModal}
+                    onDelete={removeVariant}
+                />
 
                 {variants.length === 0 && (
                     <View style={styles.emptyContainer}>
@@ -273,25 +217,13 @@ export default function StockManagement() {
                     </View>
                 )}
             </ScrollView>
-
-            <View style={styles.footer}>
-                <Button 
-                    mode="contained" 
-                    onPress={handleSave} 
-                    loading={saving} 
-                    disabled={saving}
-                    style={styles.saveBtn}
-                    contentStyle={styles.saveBtnContent}
-                >
-                    Lưu thay đổi kho hàng
-                </Button>
-            </View>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: '#FAFAFA' },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
     header: { 
         flexDirection: 'row', 
         justifyContent: 'space-between', 
@@ -312,104 +244,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: 20,
+        marginBottom: 10,
     },
     sectionTitle: { fontWeight: 'bold', color: '#1E1E1E' },
     addButton: { borderRadius: 25 },
-    variantCard: { 
-        marginBottom: 12, 
-        borderRadius: 12, 
-        backgroundColor: '#fff',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
-    },
-    cardContent: { padding: 14 },
-    cardHeader: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: 14,
-    },
-    variantAttributes: { flexDirection: 'row', gap: 8 },
-    attributeTag: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F7F7F7',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E0E0E0'
-    },
-    attributeTagLabel: { fontSize: 11, color: '#8A8A8A', marginRight: 4, fontWeight: '500' },
-    attributeTagValue: { fontSize: 13, fontWeight: 'bold', color: '#1E1E1E' },
-    colorIndicator: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
-    deleteIcon: { margin: -8 },
-    stockSectionRoot: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingTop: 12,
-        borderTopWidth: 1,
-        borderTopColor: '#F5F5F5'
-    },
-    stockLabelContainer: { flexDirection: 'row', alignItems: 'center' },
-    stockLabel: { color: '#444', fontWeight: '500', marginLeft: 4 },
-    stockInput: { backgroundColor: '#F9F9F9', height: 36, width: 80, fontSize: 14, textAlign: 'center' },
     emptyContainer: { padding: 80, alignItems: 'center' },
     emptyText: { color: '#528F72', marginTop: 12, fontWeight: 'bold' },
-    footer: { 
-        padding: 20, 
-        backgroundColor: 'white', 
-        borderTopWidth: 1, 
-        borderTopColor: '#F0F0F0' 
-    },
-    saveBtn: { borderRadius: 30, backgroundColor: '#528F72' },
-    saveBtnContent: { height: 52 },
-    modalContainer: {
-        backgroundColor: '#fff',
-        padding: 24,
-        margin: 20,
-        borderRadius: 24,
-    },
-    modalContent: { gap: 24 },
-    modalTitle: { fontWeight: 'bold', color: '#1E1E1E', textAlign: 'center', fontSize: 20 },
-    modalSection: {},
-    modalLabel: { marginBottom: 12, color: '#1E1E1E', fontWeight: '500', fontSize: 14 },
-    optionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-    colorCircle: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: 'transparent',
-    },
-    whiteColorCircle: {
-        borderColor: '#E0E0E0',
-        borderStyle: 'dashed',
-    },
-    colorCircleSelected: {
-        borderColor: '#528F72',
-        borderWidth: 2.5,
-        borderStyle: 'solid',
-    },
-    sizeCircle: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#FAFAFA",
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#E0E0E0",
-    },
-    sizeCircleSelected: { backgroundColor: "#333333", borderColor: "#333333" },
-    sizeText: { fontSize: 13, color: "#8A8A8A", fontWeight: "600" },
-    sizeTextSelected: { color: "#FFFFFF" },
-    modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 8 },
-    confirmBtn: { borderRadius: 20, backgroundColor: '#528F72', paddingHorizontal: 12 },
-    modalBtn: { borderRadius: 10 }
 });

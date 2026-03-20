@@ -7,15 +7,19 @@ import ConfirmModal from '@/components/ui/confirm-modal';
 
 interface ProductCardProps {
     product: Product;
-    onDelete: (productId: string) => Promise<void>;
+    onToggleStatus: (productId: string) => Promise<void>;
 }
 
-export default function ProductCard({ product, onDelete }: ProductCardProps) {
+export default function ProductCard({
+    product,
+    onToggleStatus,
+}: ProductCardProps) {
     const router = useRouter();
-    const [deleteModal, setDeleteModal] = useState<{
+    const [toggleModal, setToggleModal] = useState<{
         visible: boolean;
         productId: string | null;
-    }>({ visible: false, productId: null });
+        action: 'deactivate' | 'activate';
+    }>({ visible: false, productId: null, action: 'deactivate' });
 
     const primaryImage =
         product.images?.find((img) => img.isPrimary)?.imageUrl ||
@@ -23,22 +27,39 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
     const totalStock =
         product.variants?.reduce((sum, v) => sum + v.stockQuantity, 0) || 0;
 
-    const handleDeletePress = () => {
-        setDeleteModal({ visible: true, productId: product.id.toString() });
+    const handleTogglePress = () => {
+        const action = product.status === 'ACTIVE' ? 'deactivate' : 'activate';
+        setToggleModal({
+            visible: true,
+            productId: product.id.toString(),
+            action,
+        });
     };
 
-    const handleDeleteConfirm = async () => {
-        if (!deleteModal.productId) return;
+    const handleToggleConfirm = async () => {
+        if (!toggleModal.productId) return;
         try {
-            await onDelete(deleteModal.productId);
-            setDeleteModal({ visible: false, productId: null });
+            await onToggleStatus(toggleModal.productId);
+            setToggleModal({
+                visible: false,
+                productId: null,
+                action: 'deactivate',
+            });
         } catch (error) {
-            setDeleteModal({ visible: false, productId: null });
+            setToggleModal({
+                visible: false,
+                productId: null,
+                action: 'deactivate',
+            });
         }
     };
 
-    const handleModalClose = () => {
-        setDeleteModal({ visible: false, productId: null });
+    const handleToggleModalClose = () => {
+        setToggleModal({
+            visible: false,
+            productId: null,
+            action: 'deactivate',
+        });
     };
 
     return (
@@ -55,20 +76,23 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
                                 'https://via.placeholder.com/150',
                         }}
                         style={styles.img}
+                        resizeMode="cover"
                     />
                 </View>
                 <View style={styles.infoContainer}>
                     <View style={styles.info}>
-                        <Text
-                            variant="bodyLarge"
-                            numberOfLines={2}
-                            style={styles.productName}
-                        >
-                            {product.name}
-                        </Text>
-                        <Text variant="titleMedium" style={styles.price}>
-                            {product.basePrice.toLocaleString('vi-VN')}đ
-                        </Text>
+                        <View style={styles.infoTop}>
+                            <Text
+                                variant="bodyLarge"
+                                numberOfLines={2}
+                                style={styles.productName}
+                            >
+                                {product.name}
+                            </Text>
+                            <Text variant="titleMedium" style={styles.price}>
+                                {product.basePrice.toLocaleString('vi-VN')}đ
+                            </Text>
+                        </View>
                         <View style={styles.meta}>
                             <Chip
                                 compact
@@ -88,23 +112,45 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
                             </View>
                         </View>
                     </View>
-                    <IconButton
-                        icon="trash-can-outline"
-                        size={20}
-                        style={styles.deleteIcon}
-                        onPress={handleDeletePress}
-                    />
+                    <View style={styles.actions}>
+                        <IconButton
+                            icon={
+                                product.status === 'ACTIVE'
+                                    ? 'archive-outline'
+                                    : 'eye-outline'
+                            }
+                            size={20}
+                            style={styles.toggleIcon}
+                            onPress={handleTogglePress}
+                        />
+                    </View>
                 </View>
             </TouchableOpacity>
             <ConfirmModal
-                visible={deleteModal.visible}
-                title="Xóa sản phẩm"
-                message="Bạn có chắc chắn muốn xóa sản phẩm này?"
-                onConfirm={handleDeleteConfirm}
-                onCancel={handleModalClose}
-                confirmLabel="Xóa"
+                visible={toggleModal.visible}
+                title={
+                    toggleModal.action === 'deactivate'
+                        ? 'Ngừng bán sản phẩm'
+                        : 'Kích hoạt sản phẩm'
+                }
+                message={
+                    toggleModal.action === 'deactivate'
+                        ? 'Bạn có chắc chắn muốn ngừng bán sản phẩm này? Sản phẩm sẽ không còn hiển thị cho khách hàng.'
+                        : 'Bạn có chắc chắn muốn kích hoạt sản phẩm này? Sản phẩm sẽ hiển thị lại cho khách hàng.'
+                }
+                onConfirm={handleToggleConfirm}
+                onCancel={handleToggleModalClose}
+                confirmLabel={
+                    toggleModal.action === 'deactivate'
+                        ? 'Ngừng bán'
+                        : 'Kích hoạt'
+                }
                 cancelLabel="Hủy"
-                icon="trash-can-outline"
+                icon={
+                    toggleModal.action === 'deactivate'
+                        ? 'archive-outline'
+                        : 'eye-outline'
+                }
             />
         </View>
     );
@@ -123,6 +169,7 @@ const styles = StyleSheet.create({
     },
     productLayout: {
         flexDirection: 'row',
+        alignItems: 'center',
         gap: 12,
     },
     imageWrapper: {
@@ -140,10 +187,13 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
+        alignItems: 'center',
     },
     info: {
         flex: 1,
+    },
+    infoTop: {
+        marginBottom: 8,
     },
     productName: {
         fontWeight: '600',
@@ -178,8 +228,12 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '500',
     },
-    deleteIcon: {
+    actions: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    toggleIcon: {
         margin: 0,
-        alignSelf: 'center',
     },
 });

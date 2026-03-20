@@ -3,7 +3,11 @@ import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useTheme, FAB } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { productService, Product, SearchFilters } from '@/services/product.service';
+import {
+  productService,
+  Product,
+  SearchFilters,
+} from '@/services/product.service';
 import ProductCard from '@/components/admin/products/product-card';
 import ProductListHeader from '@/components/admin/products/product-list-header';
 
@@ -36,17 +40,16 @@ export default function AdminProducts() {
   useFocusEffect(
     useCallback(() => {
       loadProducts();
-    }, [search, statusFilter])
+    }, [search, statusFilter]),
   );
 
-  const handleDeleteProduct = async (productId: string) => {
+  const handleToggleStatus = async (productId: string) => {
     try {
-      await productService.deleteProduct(productId);
-      setProducts((prev) =>
-        prev.filter((p) => p.id.toString() !== productId)
-      );
+      await productService.toggleProductStatus(productId);
+      // Refresh the product list
+      await loadProducts();
     } catch (error) {
-      console.error('Failed to delete product', error);
+      console.error('Failed to toggle product status', error);
       throw error;
     }
   };
@@ -72,9 +75,14 @@ export default function AdminProducts() {
             data={products}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <ProductCard product={item} onDelete={handleDeleteProduct} />
+              <ProductCard
+                product={item}
+                onToggleStatus={handleToggleStatus}
+              />
             )}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ItemSeparatorComponent={() => (
+              <View style={styles.separator} />
+            )}
             showsVerticalScrollIndicator={false}
           />
         )}

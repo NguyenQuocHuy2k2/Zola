@@ -22,8 +22,7 @@ export default function ProductListHeader({
     const statusOptions = [
         { label: 'Tất cả', value: '' },
         { label: 'Đang bán', value: 'ACTIVE' },
-        { label: 'Hết hàng', value: 'OUT_OF_STOCK' },
-        { label: 'Đã lưu trữ', value: 'ARCHIVED' },
+        { label: 'Ngừng bán', value: 'DEACTIVE' },
     ];
 
     const selectedStatus =
@@ -32,38 +31,46 @@ export default function ProductListHeader({
 
     return (
         <View style={styles.container}>
-            <Text variant="headlineSmall" style={styles.title}>
-                Sản phẩm
-            </Text>
-            <Searchbar
-                placeholder="Tìm kiếm sản phẩm..."
-                value={searchQuery}
-                onChangeText={onSearchChange}
-                style={styles.search}
-            />
-            <View style={styles.filterContainer}>
-                <Text variant="bodyMedium" style={styles.filterLabel}>
-                    Trạng thái:
+            <View style={styles.headerTop}>
+                <Text variant="headlineSmall" style={styles.title}>
+                    Sản phẩm
                 </Text>
+                <View style={styles.countBadge}>
+                    <Text variant="bodySmall" style={styles.countText}>
+                        {productCount}
+                    </Text>
+                </View>
+            </View>
+
+            <View style={styles.searchRow}>
+                <Searchbar
+                    placeholder="Tìm kiếm sản phẩm..."
+                    value={searchQuery}
+                    onChangeText={onSearchChange}
+                    style={styles.search}
+                    inputStyle={styles.searchInput}
+                    iconColor="#666"
+                    placeholderTextColor="#999"
+                    elevation={0}
+                />
                 <Menu
                     visible={visible}
                     onDismiss={() => setVisible(false)}
                     anchor={
                         <TouchableOpacity
-                            style={styles.menuAnchor}
+                            style={styles.filterButton}
                             onPress={() => setVisible(true)}
                         >
-                            <Text style={styles.menuText}>
-                                {selectedStatus}
-                            </Text>
                             <IconButton
-                                icon="chevron-down"
-                                size={20}
-                                style={styles.iconButton}
+                                icon="tune-variant"
+                                size={22}
+                                iconColor={statusFilter ? '#1976D2' : '#666'}
+                                style={styles.filterIcon}
                             />
                         </TouchableOpacity>
                     }
                     style={styles.menu}
+                    contentStyle={styles.menuContent}
                 >
                     {statusOptions.map((option) => (
                         <Menu.Item
@@ -73,62 +80,134 @@ export default function ProductListHeader({
                                 setVisible(false);
                             }}
                             title={option.label}
+                            titleStyle={{
+                                color:
+                                    statusFilter === option.value
+                                        ? '#1976D2'
+                                        : '#333',
+                                fontWeight:
+                                    statusFilter === option.value
+                                        ? '600'
+                                        : '400',
+                            }}
                         />
                     ))}
                 </Menu>
             </View>
-            <Text variant="bodyMedium" style={styles.count}>
-                {productCount} sản phẩm
-            </Text>
+
+            {statusFilter !== '' && (
+                <View style={styles.activeFilterRow}>
+                    <Text variant="bodySmall" style={styles.activeFilterLabel}>
+                        Lọc theo:
+                    </Text>
+                    <View style={styles.activeFilterChip}>
+                        <Text style={styles.activeFilterText}>
+                            {selectedStatus}
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => onStatusFilterChange('')}
+                        >
+                            <IconButton
+                                icon="close"
+                                size={14}
+                                iconColor="#1976D2"
+                                style={{ margin: 0, height: 20, width: 20 }}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 16,
-    },
-    title: {
-        fontWeight: 'bold',
-        marginBottom: 12,
-    },
-    search: {
-        marginBottom: 8,
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 8,
         backgroundColor: '#fff',
     },
-    filterContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    filterLabel: {
-        marginRight: 8,
-    },
-    menuAnchor: {
-        flex: 1,
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#e0e0e0',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+    headerTop: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        marginBottom: 16,
     },
-    menuText: {
-        fontSize: 14,
-        color: '#333',
+    title: {
+        fontWeight: '800',
+        color: '#1a1a1a',
+        letterSpacing: -0.5,
     },
-    iconButton: {
+    countBadge: {
+        backgroundColor: '#f0f0f0',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    countText: {
+        color: '#666',
+        fontWeight: '600',
+        fontSize: 12,
+    },
+    searchRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        marginBottom: 8,
+    },
+    search: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 16,
+        height: 48,
+    },
+    searchInput: {
+        fontSize: 15,
+        minHeight: 0,
+    },
+    filterButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        backgroundColor: '#f5f5f5',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    filterIcon: {
         margin: 0,
-        marginLeft: 8,
     },
     menu: {
-        marginTop: 0,
+        marginTop: 48,
     },
-    count: {
-        color: '#888',
-        marginBottom: 8,
+    menuContent: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        elevation: 4,
+    },
+    activeFilterRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 8,
+        gap: 8,
+    },
+    activeFilterLabel: {
+        color: '#999',
+    },
+    activeFilterChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E3F2FD',
+        paddingLeft: 10,
+        paddingRight: 4,
+        paddingVertical: 2,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#BBDEFB',
+    },
+    activeFilterText: {
+        fontSize: 12,
+        color: '#1976D2',
+        fontWeight: '600',
     },
 });

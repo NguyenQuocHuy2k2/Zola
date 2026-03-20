@@ -120,7 +120,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponse> getProductsByCategory(int categoryId, int page, int size) {
-        return productRepository.findByCategoryId(categoryId, PageRequest.of(page, size))
+        return productRepository.findByCategoryId(categoryId,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")))
                 .map(productConverter::toProductResponse);
     }
 
@@ -151,7 +152,7 @@ public class ProductServiceImpl implements ProductService {
                 request.getColorId(),
                 request.getSizeId(),
                 statusEnum,
-                PageRequest.of(request.getPage(), request.getSize()))
+                PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt")))
                 .map(productConverter::toProductResponse);
     }
 
@@ -188,7 +189,7 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        product.setStatus(ProductStatus.ARCHIVED);
+        product.setStatus(ProductStatus.DEACTIVE);
         productRepository.save(product);
     }
 
@@ -198,5 +199,21 @@ public class ProductServiceImpl implements ProductService {
                 .stream()
                 .map(productConverter::toProductResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse toggleProductStatus(String id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Toggle between ACTIVE and DEACTIVE
+        if (product.getStatus() == ProductStatus.ACTIVE) {
+            product.setStatus(ProductStatus.DEACTIVE);
+        } else {
+            product.setStatus(ProductStatus.ACTIVE);
+        }
+
+        return productConverter.toProductResponse(productRepository.save(product));
     }
 }

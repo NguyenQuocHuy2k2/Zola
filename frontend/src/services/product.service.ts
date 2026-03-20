@@ -24,6 +24,7 @@ export interface SearchFilters {
   status?: string;
   page?: number;
   size?: number;
+  sort?: string;
 }
 
 export interface ProductVariant {
@@ -60,6 +61,7 @@ export interface Product {
   images: ProductImage[];
   variants: ProductVariant[];
   favoriteCount?: number;
+  createdAt?: string;
 }
 
 export interface PagedResponse<T> {
@@ -200,5 +202,11 @@ export const productService = {
   // Admin: Delete product
   async deleteProduct(id: string | number): Promise<void> {
     await api.delete(`/products/${id}`);
+  },
+
+  // Admin: Toggle product status (active/inactive)
+  async toggleProductStatus(id: string | number): Promise<Product> {
+    const response = await api.put(`/products/${id}/toggle-status`);
+    return response.data.result;
   },
 };

@@ -33,11 +33,13 @@ export default function AdminLayout() {
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="clipboard-list" size={24} color={color} />,
         }}
       />
-      {/* Hidden sub-pages */}
+      {/* Hidden sub-pages to silence warnings */}
+      <Tabs.Screen name="products/index" options={{ href: null }} />
+      <Tabs.Screen name="products/create/index" options={{ href: null }} />
+      <Tabs.Screen name="products/[id]/index" options={{ href: null }} />
+      <Tabs.Screen name="products/[id]/variant/index" options={{ href: null }} />
+      <Tabs.Screen name="orders/index" options={{ href: null }} />
       <Tabs.Screen name="index" options={{ href: null }} />
     </Tabs>
-
   );
 }
-
-

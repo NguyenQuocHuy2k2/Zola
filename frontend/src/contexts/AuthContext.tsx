@@ -109,18 +109,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const previousSession = realm.objects('UserProfile');
                 realm.delete(previousSession);
 
+                const user = JSON.parse(JSON.stringify(authData.user));
                 realm.create('UserProfile', {
-                    id: authData.user.id.toString(),
-                    username: authData.user.username,
-                    firstName: authData.user.firstName,
-                    lastName: authData.user.lastName,
-                    email: authData.user.email,
-                    phone: authData.user.phone || undefined,
-                    avatarUrl: authData.user.avatarUrl || undefined,
-                    role: authData.user.role,
-                    createdAt: authData.user.createdAt,
+                    id: user.id.toString(),
+                    username: user.username,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    phone: user.phone || undefined,
+                    avatarUrl: user.avatarUrl || undefined,
+                    role: user.role,
+                    createdAt: user.createdAt,
                 });
             });
+
+
         } catch (error) {
             console.error('Failed to save session:', error);
             throw error;

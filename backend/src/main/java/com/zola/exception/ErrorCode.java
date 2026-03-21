@@ -17,6 +17,8 @@ public enum ErrorCode {
     USER_EXISTED("user-existed", "User already exists", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXISTED("role-not-existed", "Role not found", HttpStatus.NOT_FOUND),
     UNAUTHENTICATED("unauthenticated", "Authentication is required", HttpStatus.UNAUTHORIZED),
+    INVALID_CREDENTIALS("invalid-credentials", "Invalid username or password", HttpStatus.UNAUTHORIZED),
+
     FORBIDDEN("forbidden", "You do not have permission to access this resource", HttpStatus.FORBIDDEN),
     USER_NOT_FOUND("user-not-found", "User not found", HttpStatus.NOT_FOUND),
     USER_NOT_ACTIVE("user-not-active", "User is not active", HttpStatus.FORBIDDEN),

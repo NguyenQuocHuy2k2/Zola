@@ -6,6 +6,8 @@ import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { dashboardService, DashboardStats } from '@/services/dashboard.service';
 import { formatPrice } from '@/utils/format';
+import ConfirmModal from '@/components/ui/confirm-modal';
+
 
 function StatCard({ label, value, icon, color }: { label: string; value: string | number; icon: string; color: string }) {
     return (
@@ -28,6 +30,17 @@ export default function AdminDashboard() {
     const theme = useTheme();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+    const handleLogout = () => {
+        setLogoutModalVisible(true);
+    };
+
+    const confirmLogout = () => {
+        setLogoutModalVisible(false);
+        signOut();
+    };
+
 
     const loadStats = useCallback(async () => {
         setRefreshing(true);
@@ -55,10 +68,11 @@ export default function AdminDashboard() {
                     <IconButton
                         icon="logout"
                         mode="contained-tonal"
-                        onPress={signOut}
+                        onPress={handleLogout}
                         containerColor="#FEE2E2"
                         iconColor="#B91C1C"
                     />
+
                 </View>
 
                 {/* Stats Grid */}
@@ -93,7 +107,19 @@ export default function AdminDashboard() {
                     </View>
                 </View>
             </ScrollView>
+
+            <ConfirmModal
+                visible={logoutModalVisible}
+                title="Đăng xuất"
+                message="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản quản trị không?"
+                confirmLabel="Đăng xuất"
+                confirmColor="#FF5252"
+                icon="logout-variant"
+                onConfirm={confirmLogout}
+                onCancel={() => setLogoutModalVisible(false)}
+            />
         </SafeAreaView>
+
     );
 }
 

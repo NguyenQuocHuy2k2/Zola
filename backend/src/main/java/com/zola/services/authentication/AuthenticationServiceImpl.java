@@ -94,11 +94,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findByUsername(request.getIdentifier())
             .or(() -> userRepository.findByEmail(request.getIdentifier()))
             .or(() -> userRepository.findByPhone(request.getIdentifier()))
-            .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+            .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new AppException(ErrorCode.PASSWORD_MISMATCH);
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
+
 
         if (!user.isActive()) {
             throw new AppException(ErrorCode.USER_NOT_ACTIVE);

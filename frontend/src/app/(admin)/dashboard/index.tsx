@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 
     return (
         <SafeAreaView style={styles.safe}>
-            <ScrollView 
+            <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadStats} />}
             >
@@ -52,10 +52,10 @@ export default function AdminDashboard() {
                         <Text variant="headlineSmall" style={styles.title}>Tổng quan</Text>
                         <Text variant="bodyMedium" style={styles.subtitle}>Chào mừng bạn quay lại, Admin!</Text>
                     </View>
-                    <IconButton 
-                        icon="logout" 
-                        mode="contained-tonal" 
-                        onPress={signOut} 
+                    <IconButton
+                        icon="logout"
+                        mode="contained-tonal"
+                        onPress={signOut}
                         containerColor="#FEE2E2"
                         iconColor="#B91C1C"
                     />
@@ -64,42 +64,34 @@ export default function AdminDashboard() {
                 {/* Stats Grid */}
                 <View style={styles.statsGrid}>
                     <View style={styles.row}>
-                        <StatCard 
-                            label="Doanh thu (tháng)" 
-                            value={formatPrice(stats?.monthlyRevenue || 0)} 
-                            icon="currency-usd" 
-                            color="#10B981" 
+                        <StatCard
+                            label="Doanh thu (tháng)"
+                            value={formatPrice(stats?.monthlyRevenue || 0)}
+                            icon="currency-usd"
+                            color="#10B981"
                         />
-                        <StatCard 
-                            label="Đơn hàng mới" 
-                            value={stats?.monthlyOrders || 0} 
-                            icon="clipboard-list-outline" 
-                            color="#3B82F6" 
+                        <StatCard
+                            label="Đơn hàng mới"
+                            value={stats?.monthlyOrders || 0}
+                            icon="clipboard-list-outline"
+                            color="#3B82F6"
                         />
                     </View>
                     <View style={styles.row}>
-                        <StatCard 
-                            label="Sản phẩm" 
-                            value={stats?.totalProducts || 0} 
-                            icon="package-variant-closed" 
-                            color="#F59E0B" 
+                        <StatCard
+                            label="Sản phẩm"
+                            value={stats?.totalProducts || 0}
+                            icon="package-variant-closed"
+                            color="#F59E0B"
                         />
-                        <StatCard 
-                            label="Khách hàng" 
-                            value={stats?.totalUsers || 0} 
-                            icon="account-group-outline" 
-                            color="#8B5CF6" 
+                        <StatCard
+                            label="Khách hàng"
+                            value={stats?.totalUsers || 0}
+                            icon="account-group-outline"
+                            color="#8B5CF6"
                         />
                     </View>
                 </View>
-
-                {/* Activity Placeholder or additional charts can go here */}
-                <Card style={styles.infoCard}>
-                    <Card.Title title="Thông tin hệ thống" left={(props) => <IconButton {...props} icon="information-outline" />} />
-                    <Card.Content>
-                        <Text variant="bodyMedium">Tất cả dữ liệu được cập nhật thời gian thực từ hệ thống ZOLA.</Text>
-                    </Card.Content>
-                </Card>
             </ScrollView>
         </SafeAreaView>
     );
@@ -108,9 +100,9 @@ export default function AdminDashboard() {
 const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: '#FAFAFA' },
     scrollContent: { padding: 20 },
-    header: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 24
     },

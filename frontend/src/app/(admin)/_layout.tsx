@@ -20,14 +20,14 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
-        name="products/index"
+        name="products"
         options={{
           title: 'Sản phẩm',
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="package-variant" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="orders/index"
+        name="orders"
         options={{
           title: 'Đơn hàng',
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="clipboard-list" size={24} color={color} />,
@@ -35,11 +35,9 @@ export default function AdminLayout() {
       />
       {/* Hidden sub-pages */}
       <Tabs.Screen name="index" options={{ href: null }} />
-      <Tabs.Screen name="products/create/index" options={{ href: null }} />
-      <Tabs.Screen name="products/[id]/index" options={{ href: null }} />
-      <Tabs.Screen name="products/[id]/variant/index" options={{ href: null }} />
-      <Tabs.Screen name="order/[id]/index" options={{ href: null }} />
     </Tabs>
+
   );
 }
+
 

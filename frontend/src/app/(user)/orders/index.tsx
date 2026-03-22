@@ -39,6 +39,16 @@ export default function OrdersScreen() {
         return o.status === activeTab;
     });
 
+    const counts = {
+        ALL: orders.length,
+        PENDING: orders.filter((o: Order) => o.status === 'PENDING').length,
+        CONFIRMED: orders.filter((o: Order) => o.status === 'CONFIRMED').length,
+        PREPARING: orders.filter((o: Order) => o.status === 'PREPARING').length,
+        SHIPPING: orders.filter((o: Order) => o.status === 'SHIPPING').length,
+        RECEIVED: orders.filter((o: Order) => o.status === 'RECEIVED').length,
+        CANCELLED: orders.filter((o: Order) => o.status === 'CANCELLED').length,
+    };
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#FAFAFA' }]} edges={['top', 'left', 'right']}>
             <Stack.Screen options={{ headerShown: false }} />
@@ -50,9 +60,10 @@ export default function OrdersScreen() {
                 <View style={{ width: 44 }} />
             </View>
 
-            <OrderStatusTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            <OrderStatusTabs activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
 
             {loading ? (
+
                 <ActivityIndicator style={styles.center} />
             ) : (
                 <FlatList

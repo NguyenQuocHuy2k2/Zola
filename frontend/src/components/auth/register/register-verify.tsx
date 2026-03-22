@@ -1,7 +1,7 @@
-import OtpInput from '@/components/ui/otp-Input';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Button, Text, useTheme } from 'react-native-paper';
+import OtpInput from '@/components/ui/otp-input';
 
 interface RegisterVerifyProps {
     email: string;

@@ -42,10 +42,25 @@ const OrderStatusTabs: React.FC<OrderStatusTabsProps> = ({ activeTab, onTabChang
                                 color={isActive ? '#FFFFFF' : '#666'}
                                 style={{ marginRight: 5 }}
                             />
-                            <Text style={isActive ? styles.activeTabText : styles.inactiveTabText}>
+                             <Text style={isActive ? styles.activeTabText : styles.inactiveTabText}>
                                 {item.label}
-                                {count !== undefined ? ` (${count})` : ''}
                             </Text>
+                            {count !== undefined && count > 0 && (
+                                <View style={[
+                                    styles.countBadge,
+                                    isActive 
+                                        ? { backgroundColor: 'rgba(255, 255, 255, 0.2)' }
+                                        : { backgroundColor: 'rgba(0, 0, 0, 0.05)' }
+                                ]}>
+                                    <Text style={[
+                                        styles.countText,
+                                        isActive ? { color: '#FFFFFF' } : { color: '#666' }
+                                    ]}>
+                                        {count}
+                                    </Text>
+                                </View>
+                            )}
+
                         </TouchableOpacity>
                     );
                 }}
@@ -77,7 +92,22 @@ const styles = StyleSheet.create({
     },
     inactiveTabText: {
         color: '#666666',
+        fontSize: 14,
+    },
+    countBadge: {
+        marginLeft: 6,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 10,
+        minWidth: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    countText: {
+        fontSize: 11,
+        fontWeight: 'bold',
     },
 });
+
 
 export default OrderStatusTabs;

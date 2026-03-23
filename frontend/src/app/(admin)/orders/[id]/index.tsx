@@ -1,52 +1,120 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Text, useTheme, ActivityIndicator, Divider, Chip, Button, Portal, Modal, Avatar } from 'react-native-paper';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { useTheme, ActivityIndicator, Button, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
-import { orderService, Order, OrderStatus } from '@/services/order.service';
-import { formatPrice } from '@/utils/format';
-import { STATUS_LABEL, STATUS_COLOR } from '@/constants/order';
+import { Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { orderService, Order, OrderStatus, CancellationReason, CancellationReasonResponse } from '@/services/order.service';
 import OrderDetailHeader from '@/components/orders/order-detail/order-detail-header';
+
+import OrderDeliveryInfo from '@/components/admin/orders/details/order-delivery-info';
+import OrderItemsList from '@/components/admin/orders/details/order-items-list';
+import OrderPaymentSummary from '@/components/admin/orders/details/order-payment-summary';
+import OrderCancellationInfo from '@/components/admin/orders/details/order-cancellation-info';
+import CancellationReasonModal from '@/components/admin/orders/details/cancellation-reason-modal';
+import StatusModal from '@/components/ui/status-modal';
+
+
+const STATUS_ORDER: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PREPARING', 'SHIPPING', 'RECEIVED'];
+
+const getNextStatus = (current: OrderStatus): OrderStatus | null => {
+    const idx = STATUS_ORDER.indexOf(current);
+    if (idx === -1 || idx >= STATUS_ORDER.length - 1) return null;
+    return STATUS_ORDER[idx + 1];
+};
+
+const NEXT_STATUS_LABEL: Partial<Record<OrderStatus, string>> = {
+    PENDING: 'Xác nhận đơn hàng',
+    CONFIRMED: 'Chuyển sang Chuẩn bị',
+    PREPARING: 'Chuyển sang Đang giao',
+    SHIPPING: 'Xác nhận Đã giao',
+};
+
+const NEXT_STATUS_COLOR: Partial<Record<OrderStatus, string>> = {
+    PENDING: '#8B5CF6',   // CONFIRMED color
+    CONFIRMED: '#F59E0B', // PREPARING color
+    PREPARING: '#06B6D4', // SHIPPING color
+    SHIPPING: '#388E3C',  // RECEIVED color
+};
 
 export default function OrderDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const theme = useTheme();
-    const router = useRouter();
     
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
-    const [updating, setUpdating] = useState(false);
-    const [statusModalVisible, setStatusModalVisible] = useState(false);
+    const [advancing, setAdvancing] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
+    const [reasonModalVisible, setReasonModalVisible] = useState(false);
+    const [reasons, setReasons] = useState<CancellationReasonResponse[]>([]);
+    const [selectedReason, setSelectedReason] = useState<CancellationReason | null>(null);
+    const [statusModal, setStatusModal] = useState<{
+        visible: boolean;
+        type: 'success' | 'error';
+        title: string;
+        message: string;
+    }>({ visible: false, type: 'success', title: '', message: '' });
+
+    const showStatus = (type: 'success' | 'error', title: string, message: string) => {
+        setStatusModal({ visible: true, type, title, message });
+    };
 
     const loadOrderDetail = useCallback(async () => {
         if (!id) return;
         setLoading(true);
-        const data = await orderService.getOrderById(id);
-        setOrder(data);
-        setLoading(false);
+        try {
+            const [orderData, reasonsData] = await Promise.all([
+                orderService.getOrderById(id),
+                orderService.getCancellationReasons('ADMIN')
+            ]);
+            setOrder(orderData);
+            setReasons(reasonsData);
+        } catch (error) {
+            console.error('Load order detail failed', error);
+        } finally {
+            setLoading(false);
+        }
     }, [id]);
 
     useFocusEffect(useCallback(() => {
         loadOrderDetail();
     }, [loadOrderDetail]));
 
-    const handleUpdateStatus = async (newStatus: OrderStatus) => {
+    const handleAdvanceStatus = async () => {
         if (!order) return;
-        setUpdating(true);
+        const next = getNextStatus(order.status);
+        if (!next) return;
+        setAdvancing(true);
         try {
-            const updated = await orderService.updateOrderStatus(order.id, newStatus);
+            const updated = await orderService.updateOrderStatus(order.id, next);
             if (updated) {
                 setOrder(updated);
-                setStatusModalVisible(false);
+                showStatus('success', 'Thành công', 'Đã cập nhật trạng thái đơn hàng');
             } else {
-                Alert.alert('Lỗi', 'Cập nhật trạng thái thất bại');
+                showStatus('error', 'Lỗi', 'Cập nhật trạng thái thất bại');
             }
         } catch (error) {
-            Alert.alert('Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái');
+            showStatus('error', 'Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái');
         } finally {
-            setUpdating(false);
+            setAdvancing(false);
+        }
+    };
+
+    const handleCancelOrder = async (reason: CancellationReason) => {
+        if (!order) return;
+        setCancelling(true);
+        try {
+            const updated = await orderService.updateOrderStatus(order.id, 'CANCELLED', reason);
+            if (updated) {
+                setOrder(updated);
+                setReasonModalVisible(false);
+                showStatus('success', 'Thành công', 'Đơn hàng đã được hủy');
+            } else {
+                showStatus('error', 'Lỗi', 'Hủy đơn hàng thất bại');
+            }
+        } catch (error) {
+            showStatus('error', 'Lỗi', 'Có lỗi xảy ra khi hủy đơn hàng');
+        } finally {
+            setCancelling(false);
         }
     };
 
@@ -61,10 +129,15 @@ export default function OrderDetailScreen() {
     if (!order) {
         return (
             <View style={styles.center}>
-                <Text>Không tìm thấy đơn hàng</Text>
+                <Text style={{ textAlign: 'center' }}>Không tìm thấy đơn hàng</Text>
             </View>
         );
     }
+
+    const isTerminal = order.status === 'CANCELLED' || order.status === 'RECEIVED';
+    const nextStatus = getNextStatus(order.status);
+    const nextLabel = NEXT_STATUS_LABEL[order.status];
+    const nextColor = NEXT_STATUS_COLOR[order.status] ?? '#1D1D1D';
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#F9F9F9' }]} edges={['top', 'left', 'right']}>
@@ -77,164 +150,66 @@ export default function OrderDetailScreen() {
             />
             
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                {/* Delivery Information Section */}
-                <View style={styles.menuCard}>
-                    <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons name="truck-delivery-outline" size={22} color="#1D1D1D" />
-                        <Text style={styles.cardTitle}>Thông tin giao hàng</Text>
-                    </View>
-                    
-                    <View style={styles.deliveryContent}>
-                        <View style={styles.infoRow}>
-                            <MaterialCommunityIcons name="account-outline" size={20} color="#666" style={styles.infoIcon} />
-                            <View style={styles.infoTextContainer}>
-                                <Text style={styles.infoLabel}>Khách hàng</Text>
-                                <Text style={styles.infoValue}>{order.customerName || 'N/A'}</Text>
-                            </View>
-                        </View>
+                <OrderDeliveryInfo order={order} />
+                <OrderItemsList items={order.items || []} />
+                <OrderPaymentSummary order={order} />
+                <OrderCancellationInfo order={order} reasons={reasons} />
 
-                        <View style={styles.infoRow}>
-                            <MaterialCommunityIcons name="phone-outline" size={20} color="#666" style={styles.infoIcon} />
-                            <View style={styles.infoTextContainer}>
-                                <Text style={styles.infoLabel}>Số điện thoại</Text>
-                                <Text style={styles.infoValue}>{order.phoneNumber}</Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.infoRow}>
-                            <MaterialCommunityIcons name="map-marker-outline" size={20} color="#666" style={styles.infoIcon} />
-                            <View style={styles.infoTextContainer}>
-                                <Text style={styles.infoLabel}>Địa chỉ nhận hàng</Text>
-                                <Text style={styles.infoValue}>{order.shippingAddress}</Text>
-                            </View>
-                        </View>
-
-                        {order.notes && (
-                            <View style={styles.infoRow}>
-                                <MaterialCommunityIcons name="note-text-outline" size={20} color="#666" style={styles.infoIcon} />
-                                <View style={styles.infoTextContainer}>
-                                    <Text style={styles.infoLabel}>Ghi chú</Text>
-                                    <Text style={styles.infoValue}>{order.notes}</Text>
-                                </View>
-                            </View>
+                {!isTerminal && (
+                    <View style={styles.statusSection}>
+                        {nextStatus && nextLabel && (
+                            <Button
+                                mode="contained"
+                                onPress={handleAdvanceStatus}
+                                style={styles.advanceBtn}
+                                contentStyle={{ height: 50 }}
+                                labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
+                                loading={advancing}
+                                disabled={advancing || cancelling}
+                                buttonColor={nextColor}
+                                icon="arrow-right-circle-outline"
+                            >
+                                {nextLabel}
+                            </Button>
                         )}
+                        <Button
+                            mode="outlined"
+                            onPress={() => {
+                                setSelectedReason(null);
+                                setReasonModalVisible(true);
+                            }}
+                            style={styles.cancelBtn}
+                            contentStyle={{ height: 48 }}
+                            labelStyle={{ fontSize: 15, fontWeight: 'bold' }}
+                            loading={cancelling}
+                            disabled={advancing || cancelling}
+                            textColor={theme.colors.error}
+                            icon="close-circle-outline"
+                        >
+                            Hủy đơn hàng
+                        </Button>
                     </View>
-                </View>
-
-                {/* Items Card */}
-                <View style={styles.menuCard}>
-                    <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons name="package-variant-closed" size={20} color="#1D1D1D" />
-                        <Text style={styles.cardTitle}>Sản phẩm ({order.items?.length || 0})</Text>
-                    </View>
-                    {order.items?.map((item, index) => (
-                        <View key={item.id}>
-                            {index > 0 && <Divider style={styles.divider} />}
-                            <View style={styles.itemRow}>
-                                <Image 
-                                    source={{ uri: item.imageUrl }} 
-                                    style={styles.itemImage}
-                                    contentFit="cover"
-                                />
-                                <View style={styles.itemInfo}>
-                                    <Text style={styles.itemName} numberOfLines={1}>{item.productName}</Text>
-                                    <Text style={styles.itemPrice}>
-                                        {formatPrice(item.price)} x {item.quantity}
-                                    </Text>
-                                </View>
-                                <Text style={styles.itemTotal}>
-                                    {formatPrice(item.price * item.quantity)}
-                                </Text>
-                            </View>
-                        </View>
-                    ))}
-                </View>
-
-                {/* Payment & Summary Card */}
-                <View style={styles.menuCard}>
-                    <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons name="credit-card-outline" size={20} color="#1D1D1D" />
-                        <Text style={styles.cardTitle}>Thanh toán & Tổng cộng</Text>
-                    </View>
-                    <View style={styles.summaryItem}>
-                        <Text style={styles.summaryLabel}>Phương thức</Text>
-                        <Text style={styles.summaryValue}>{order.paymentMethod}</Text>
-                    </View>
-                    <View style={styles.summaryItem}>
-                        <Text style={styles.summaryLabel}>Tạm tiền</Text>
-                        <Text style={styles.summaryValue}>{formatPrice(order.totalAmount)}</Text>
-                    </View>
-                    <View style={styles.summaryItem}>
-                        <Text style={styles.summaryLabel}>Phí vận chuyển</Text>
-                        <Text style={styles.summaryValue}>{formatPrice(0)}</Text>
-                    </View>
-                    <Divider style={[styles.divider, { marginVertical: 12 }]} />
-                    <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>Tổng cộng</Text>
-                        <Text style={styles.totalValue}>{formatPrice(order.totalAmount)}</Text>
-                    </View>
-                </View>
-
-                {/* Status Update Section - Moved to Bottom */}
-                <View style={styles.statusSection}>
-                    <Button 
-                        mode="contained" 
-                        onPress={() => setStatusModalVisible(true)}
-                        style={styles.updateBtn}
-                        contentStyle={{ height: 50 }}
-                        labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
-                        loading={updating}
-                        disabled={updating}
-                        buttonColor="#1D1D1D"
-                    >
-                        Cập nhật trạng thái
-                    </Button>
-                </View>
+                )}
             </ScrollView>
 
-            {/* Status Selection Modal */}
-            <Portal>
-                <Modal 
-                    visible={statusModalVisible} 
-                    onDismiss={() => setStatusModalVisible(false)}
-                    contentContainerStyle={styles.modalContainer}
-                >
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Chọn trạng thái mới</Text>
-                    </View>
-                    <ScrollView>
-                        {(Object.keys(STATUS_LABEL) as OrderStatus[]).map((status) => (
-                            <TouchableOpacity 
-                                key={status} 
-                                style={[
-                                    styles.statusOption,
-                                    order.status === status && { backgroundColor: '#F5F5F5' }
-                                ]}
-                                onPress={() => handleUpdateStatus(status)}
-                            >
-                                <View style={[styles.statusDot, { backgroundColor: STATUS_COLOR[status] }]} />
-                                <Text style={[
-                                    styles.statusOptionText,
-                                    order.status === status && { fontWeight: 'bold', color: '#1D1D1D' }
-                                ]}>
-                                    {STATUS_LABEL[status]}
-                                </Text>
-                                {order.status === status && (
-                                    <MaterialCommunityIcons name="check" size={20} color="#1D1D1D" />
-                                )}
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                    <Button 
-                        mode="text" 
-                        onPress={() => setStatusModalVisible(false)}
-                        style={{ marginTop: 12 }}
-                        textColor="#666"
-                    >
-                        Đóng
-                    </Button>
-                </Modal>
-            </Portal>
+            <CancellationReasonModal 
+                visible={reasonModalVisible}
+                onDismiss={() => setReasonModalVisible(false)}
+                reasons={reasons}
+                selectedReason={selectedReason}
+                setSelectedReason={setSelectedReason}
+                onConfirm={() => selectedReason && handleCancelOrder(selectedReason)}
+                onBack={() => setReasonModalVisible(false)}
+                updating={cancelling}
+            />
+
+            <StatusModal
+                visible={statusModal.visible}
+                type={statusModal.type}
+                title={statusModal.title}
+                message={statusModal.message}
+                onClose={() => setStatusModal(prev => ({ ...prev, visible: false }))}
+            />
         </SafeAreaView>
     );
 }
@@ -243,157 +218,17 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     scrollContent: { padding: 16, paddingBottom: 40 },
-    menuCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 24,
-        marginBottom: 20,
-        padding: 24,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1D1D1D',
-        marginLeft: 10,
-    },
-    deliveryContent: {
-        gap: 16,
-    },
-    infoRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-    },
-    infoIcon: {
-        marginTop: 2,
-        marginRight: 12,
-    },
-    infoTextContainer: {
-        flex: 1,
-    },
-    infoLabel: {
-        fontSize: 13,
-        color: '#8A8D9F',
-        marginBottom: 2,
-    },
-    infoValue: {
-        fontSize: 15,
-        color: '#1D1D1D',
-        fontWeight: '500',
-        lineHeight: 20,
-    },
-    divider: {
-        backgroundColor: '#F0F0F0',
-        height: 1,
-        marginVertical: 12,
-    },
-    itemRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 8,
-    },
-    itemImage: {
-        width: 60,
-        height: 60,
-        borderRadius: 12,
-        backgroundColor: '#F0F0F0',
-    },
-    itemInfo: {
-        flex: 1,
-        marginLeft: 12,
-    },
-    itemName: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#1D1D1D',
-    },
-    itemPrice: {
-        fontSize: 13,
-        color: '#777',
-        marginTop: 4,
-    },
-    itemTotal: {
-        fontSize: 15,
-        fontWeight: 'bold',
-        color: '#1D1D1D',
-    },
-    summaryItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 8,
-    },
-    summaryLabel: {
-        fontSize: 14,
-        color: '#777',
-    },
-    summaryValue: {
-        fontSize: 14,
-        color: '#1D1D1D',
-        fontWeight: '500',
-    },
-    totalRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    totalLabel: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#1D1D1D',
-    },
-    totalValue: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#E53935',
-    },
     statusSection: {
         marginTop: 10,
         marginBottom: 20,
+        gap: 10,
     },
-    updateBtn: {
+    advanceBtn: {
         borderRadius: 16,
     },
-    modalContainer: {
-        backgroundColor: 'white',
-        padding: 24,
-        margin: 20,
-        borderRadius: 24,
-        maxHeight: '80%',
-    },
-    modalHeader: {
-        marginBottom: 20,
-        alignItems: 'center',
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1D1D1D',
-    },
-    statusOption: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        borderRadius: 12,
-        marginBottom: 4,
-    },
-    statusDot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        marginRight: 12,
-    },
-    statusOptionText: {
-        fontSize: 16,
-        color: '#444',
-        flex: 1,
+    cancelBtn: {
+        borderRadius: 16,
+        borderColor: '#D32F2F',
     },
 });
+

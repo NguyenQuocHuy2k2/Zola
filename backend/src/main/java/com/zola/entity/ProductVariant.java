@@ -33,6 +33,10 @@ public class ProductVariant {
     @Column(name = "stock_quantity", nullable = false)
     Integer stockQuantity;
 
+    @Column(name = "reserved_quantity", nullable = false)
+    @Builder.Default
+    Integer reservedQuantity = 0;
+
     @Column(name = "deleted_at")
     Instant deletedAt;
 }

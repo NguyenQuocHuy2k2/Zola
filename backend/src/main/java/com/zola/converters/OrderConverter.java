@@ -23,6 +23,7 @@ public class OrderConverter {
                 .phoneNumber(order.getPhoneNumber())
                 .paymentMethod(order.getPaymentMethod())
                 .notes(order.getNotes())
+                .cancellationReason(order.getCancellationReason())
                 .createdAt(order.getCreatedAt())
                 .items(order.getItems().stream()
                         .map(this::toOrderItemResponse)

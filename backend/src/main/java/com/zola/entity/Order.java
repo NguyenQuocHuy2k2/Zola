@@ -54,6 +54,10 @@ public class Order {
     @Column(name = "notes", columnDefinition = "TEXT")
     String notes;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cancellation_reason")
+    com.zola.enums.CancellationReason cancellationReason;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     LocalDateTime createdAt;

@@ -3,6 +3,15 @@ import { CartItem } from './cart.service';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'RECEIVED' | 'CANCELLED';
 export type PaymentMethod = 'COD' | 'VNPAY';
+export type CancellationReason = 
+    | 'CHANGE_MIND' | 'WRONG_INFO' | 'PAYMENT_ISSUE' | 'TIME_DELAY' | 'FORGOT_VOUCHER' // User
+    | 'OUT_OF_STOCK' | 'PRODUCT_FAULT' | 'NO_CONTACT' | 'INVALID_ADDRESS' | 'FRAUD_SUSPICION' | 'PRICING_ERROR' // Admin
+    | 'OTHER';
+
+export interface CancellationReasonResponse {
+    code: CancellationReason;
+    label: string;
+}
 
 export interface OrderItem {
     id: string;
@@ -25,6 +34,7 @@ export interface Order {
     phoneNumber: string;
     paymentMethod: PaymentMethod;
     notes?: string;
+    cancellationReason?: CancellationReason;
     createdAt: string; // ISO String
 }
 
@@ -65,9 +75,9 @@ export const orderService = {
         }
     },
 
-    async cancelOrder(id: string): Promise<void> {
+    async cancelOrder(id: string, reason?: CancellationReason): Promise<void> {
         try {
-            await api.post(`/orders/${id}/cancel`);
+            await api.post(`/orders/${id}/cancel`, null, { params: { reason } });
         } catch (error) {
             console.error('Cancel order failed', error);
             throw error;
@@ -84,13 +94,23 @@ export const orderService = {
         }
     },
 
-    async updateOrderStatus(id: string, status: OrderStatus): Promise<Order | null> {
+    async updateOrderStatus(id: string, status: OrderStatus, reason?: CancellationReason): Promise<Order | null> {
         try {
-            const response = await api.patch(`/orders/${id}/status`, null, { params: { status } });
+            const response = await api.patch(`/orders/${id}/status`, null, { params: { status, reason } });
             return response.data.result;
         } catch (error) {
             console.error('Update order status failed', error);
             return null;
+        }
+    },
+
+    async getCancellationReasons(role: 'USER' | 'ADMIN'): Promise<CancellationReasonResponse[]> {
+        try {
+            const response = await api.get('/orders/cancellation-reasons', { params: { role } });
+            return response.data.result;
+        } catch (error) {
+            console.error('Get cancellation reasons failed', error);
+            return [];
         }
     }
 };

@@ -4,28 +4,58 @@ import { Text, Button, useTheme } from 'react-native-paper';
 
 interface OrderDetailActionsProps {
     onCancel: () => void;
+    onConfirmReceived?: () => void;
     cancelling: boolean;
-    visible: boolean;
+    confirming?: boolean;
+    canCancel: boolean;
+    canConfirm?: boolean;
 }
 
-const OrderDetailActions: React.FC<OrderDetailActionsProps> = ({ onCancel, cancelling, visible }) => {
+const OrderDetailActions: React.FC<OrderDetailActionsProps> = ({ 
+    onCancel, 
+    onConfirmReceived, 
+    cancelling, 
+    confirming, 
+    canCancel, 
+    canConfirm 
+}) => {
     const theme = useTheme();
 
-    if (!visible) return null;
+    if (!canCancel && !canConfirm) return null;
 
     return (
         <View style={styles.actionSection}>
-            <Text style={styles.warningText}>Bạn chỉ có thể hủy đơn hàng trong vòng 30 phút sau khi đặt.</Text>
-            <Button
-                mode="contained"
-                buttonColor={theme.colors.error}
-                onPress={onCancel}
-                loading={cancelling}
-                disabled={cancelling}
-                style={{ marginTop: 12 }}
-            >
-                Hủy Đơn Hàng
-            </Button>
+            {canCancel && (
+                <>
+                    <Text style={styles.warningText}>Bạn chỉ có thể hủy đơn hàng trong vòng 30 phút sau khi đặt.</Text>
+                    <Button
+                        mode="contained"
+                        buttonColor={theme.colors.error}
+                        onPress={onCancel}
+                        loading={cancelling}
+                        disabled={cancelling}
+                        style={{ marginTop: 12, borderRadius: 12 }}
+                        labelStyle={{ fontWeight: 'bold' }}
+                    >
+                        Hủy Đơn Hàng
+                    </Button>
+                </>
+            )}
+            
+            {canConfirm && (
+                <Button
+                    mode="contained"
+                    buttonColor={theme.colors.primary}
+                    onPress={onConfirmReceived}
+                    loading={confirming}
+                    disabled={confirming}
+                    style={{ marginTop: 12, borderRadius: 12 }}
+                    labelStyle={{ fontWeight: 'bold' }}
+                    icon="check-circle-outline"
+                >
+                    Đã Nhận Hàng
+                </Button>
+            )}
         </View>
     );
 };

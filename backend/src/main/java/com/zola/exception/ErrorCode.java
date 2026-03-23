@@ -34,6 +34,8 @@ public enum ErrorCode {
     ORDER_NOT_FOUND("order-not-found", "Đơn hàng không tồn tại", HttpStatus.NOT_FOUND),
     ORDER_CANNOT_CANCEL("order-cannot-cancel", "Đơn hàng không thể hủy ở trạng thái hiện tại", HttpStatus.BAD_REQUEST),
     ORDER_CANCEL_TIME_EXCEEDED("order-cancel-time-exceeded", "Đã hết thời gian cho phép hủy đơn hàng (30 phút)", HttpStatus.BAD_REQUEST),
+    PRODUCT_OUT_OF_STOCK("product-out-of-stock", "Sản phẩm đã hết hàng hoặc không đủ số lượng", HttpStatus.BAD_REQUEST),
+    INVALID_ORDER_STATUS_TRANSITION("invalid-order-status-transition", "Chuyển đổi trạng thái đơn hàng không hợp lệ", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(String code, String message, HttpStatusCode statusCode) {

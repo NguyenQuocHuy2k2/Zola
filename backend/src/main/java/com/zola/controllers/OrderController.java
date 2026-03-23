@@ -2,7 +2,9 @@ package com.zola.controllers;
 
 import com.zola.dto.request.order.OrderRequest;
 import com.zola.dto.response.ApiResponse;
+import com.zola.dto.response.order.CancellationReasonResponse;
 import com.zola.dto.response.order.OrderResponse;
+import com.zola.enums.CancellationReason;
 import com.zola.enums.OrderStatus;
 import com.zola.services.order.OrderService;
 import lombok.AccessLevel;
@@ -51,17 +53,30 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/status")
-    public ApiResponse<OrderResponse> updateStatus(@PathVariable String id, @RequestParam OrderStatus status) {
+    public ApiResponse<OrderResponse> updateStatus(
+            @PathVariable String id, 
+            @RequestParam OrderStatus status,
+            @RequestParam(required = false) CancellationReason reason) {
         return ApiResponse.<OrderResponse>builder()
-                .result(orderService.updateStatus(id, status))
+                .result(orderService.updateStatus(id, status, reason))
                 .build();
     }
 
     @PostMapping("/{id}/cancel")
-    public ApiResponse<String> cancelOrder(@PathVariable String id) {
-        orderService.cancelOrder(id);
+    public ApiResponse<String> cancelOrder(
+            @PathVariable String id,
+            @RequestParam(required = false) CancellationReason reason) {
+        orderService.cancelOrder(id, reason);
         return ApiResponse.<String>builder()
                 .result("Order cancelled successfully")
+                .build();
+    }
+
+    @GetMapping("/cancellation-reasons")
+    public ApiResponse<List<CancellationReasonResponse>> getCancellationReasons(
+            @RequestParam(defaultValue = "USER") String role) {
+        return ApiResponse.<List<CancellationReasonResponse>>builder()
+                .result(orderService.getCancellationReasons(role))
                 .build();
     }
 }

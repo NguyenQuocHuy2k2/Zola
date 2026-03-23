@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Image } from 'expo-image';
 import { Order } from '@/services/order.service';
 import { formatPrice } from '@/utils/format';
 import { STATUS_LABEL, STATUS_COLOR } from '@/constants/order';
@@ -34,7 +33,7 @@ export default function OrderCard({ order, onPress }: OrderCardProps) {
                             <Image
                                 source={{ uri: orderItem.imageUrl }}
                                 style={styles.summaryItemImage}
-                                contentFit="cover"
+                                resizeMode="cover"
                             />
                             <View style={styles.summaryItemContent}>
                                 <View style={styles.summaryItemTitleRow}>

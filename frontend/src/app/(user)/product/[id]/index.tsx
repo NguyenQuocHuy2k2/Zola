@@ -67,8 +67,6 @@ export default function ProductDetailScreen() {
             setReviews(revs);
             setIsFavorite(liked);
 
-            console.log(data);
-
             // Default selected image (primary first)
             const primaryImg =
                 data.images.find((img) => img.isPrimary) ?? data.images[0];

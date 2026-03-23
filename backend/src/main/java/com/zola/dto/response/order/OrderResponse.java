@@ -1,5 +1,6 @@
 package com.zola.dto.response.order;
 
+import com.zola.enums.CancellationReason;
 import com.zola.enums.OrderStatus;
 import com.zola.enums.PaymentMethod;
 import lombok.*;
@@ -24,6 +25,7 @@ public class OrderResponse {
     String phoneNumber;
     PaymentMethod paymentMethod;
     String notes;
+    CancellationReason cancellationReason;
     LocalDateTime createdAt;
     List<OrderItemResponse> items;
 }

@@ -252,7 +252,6 @@ export default function ReviewScreen() {
                                         placeholder="Nhận xét của bạn (tuỳ chọn)..."
                                         placeholderTextColor="#9CA3AF"
                                         multiline
-                                        numberOfLines={3}
                                         value={state.comment}
                                         onChangeText={text => setComment(item.id, text)}
                                         textAlignVertical="top"
@@ -358,10 +357,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#E5E7EB',
         borderRadius: 12,
-        padding: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
         fontSize: 14,
         color: '#222',
-        minHeight: 80,
+        minHeight: 44,
+        maxHeight: 120,
         backgroundColor: '#FAFAFA',
     },
     reviewedBadge: {

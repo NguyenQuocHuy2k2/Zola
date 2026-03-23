@@ -1,5 +1,6 @@
 package com.zola.services.color;
 
+import com.zola.converters.AttributeConverter;
 import com.zola.dto.request.attribute.ColorRequest;
 import com.zola.dto.response.attribute.ColorResponse;
 import com.zola.entity.Color;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class ColorServiceImpl implements ColorService {
 
     ColorRepository colorRepository;
+    AttributeConverter attributeConverter;
 
     @Override
     public ColorResponse createColor(ColorRequest request) {
@@ -26,13 +28,13 @@ public class ColorServiceImpl implements ColorService {
                 .hexCode(request.getHexCode())
                 .build();
         color = colorRepository.save(color);
-        return mapToResponse(color);
+        return attributeConverter.toColorResponse(color);
     }
 
     @Override
     public List<ColorResponse> getAllColors() {
         return colorRepository.findAll().stream()
-                .map(this::mapToResponse)
+                .map(attributeConverter::toColorResponse)
                 .collect(Collectors.toList());
     }
 
@@ -40,7 +42,7 @@ public class ColorServiceImpl implements ColorService {
     public ColorResponse getColor(Long id) {
         Color color = colorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Color not found"));
-        return mapToResponse(color);
+        return attributeConverter.toColorResponse(color);
     }
 
     @Override
@@ -50,19 +52,11 @@ public class ColorServiceImpl implements ColorService {
         color.setName(request.getName());
         color.setHexCode(request.getHexCode());
         color = colorRepository.save(color);
-        return mapToResponse(color);
+        return attributeConverter.toColorResponse(color);
     }
 
     @Override
     public void deleteColor(Long id) {
         colorRepository.deleteById(id);
-    }
-
-    private ColorResponse mapToResponse(Color color) {
-        return ColorResponse.builder()
-                .id(color.getId())
-                .name(color.getName())
-                .hexCode(color.getHexCode())
-                .build();
     }
 }

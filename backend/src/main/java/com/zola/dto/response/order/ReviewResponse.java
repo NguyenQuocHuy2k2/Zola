@@ -3,20 +3,22 @@ package com.zola.dto.response.order;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderItemResponse {
+public class ReviewResponse {
     String id;
+    String orderItemId;
     String productId;
     String productName;
-    Long productVariantId;
     String imageUrl;
-    Integer quantity;
-    BigDecimal price;
-    boolean reviewed;
+    Integer rating;
+    String comment;
+    String userFullName;
+    String userAvatarUrl;
+    LocalDateTime createdAt;
 }

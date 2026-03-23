@@ -20,7 +20,8 @@ import {
     ProductVariant,
 } from "@/services/product.service";
 import { cartService } from "@/services/cart.service";
-import { favoriteService, Review } from '@/services/favorite.service';
+import { favoriteService } from '@/services/favorite.service';
+import { reviewService, Review } from '@/services/review.service';
 import { formatPrice } from "@/utils/format";
 import ProductSelectionModal from "@/components/products/product-selection-modal";
 import StatusModal, { StatusType } from "@/components/ui/status-modal";
@@ -60,7 +61,7 @@ export default function ProductDetailScreen() {
         try {
             const [data, revs, liked] = await Promise.all([
                 productService.getProductById(id),
-                favoriteService.getReviews(id),
+                reviewService.getReviewsByProduct(id),
                 favoriteService.checkIsFavorite(id),
             ]);
             setProduct(data);
@@ -365,13 +366,13 @@ export default function ProductDetailScreen() {
                                         <View style={styles.reviewItemHeader}>
                                             <Image
                                                 source={{
-                                                    uri: "https://i.pravatar.cc/150?u=" + rev.id,
+                                                    uri: rev.userAvatarUrl || "https://static.vecteezy.com/system/resources/thumbnails/001/840/618/small/picture-profile-icon-male-icon-human-or-people-sign-and-symbol-free-vector.jpg",
                                                 }}
                                                 style={styles.reviewAvatar}
                                             />
                                             <View style={{ flex: 1, marginLeft: 12 }}>
                                                 <Text style={styles.reviewUserName}>
-                                                    {rev.userName}
+                                                    {rev.userFullName || 'Khách hàng'}
                                                 </Text>
                                                 <Text style={styles.reviewStars}>
                                                     {"★".repeat(rev.rating)}

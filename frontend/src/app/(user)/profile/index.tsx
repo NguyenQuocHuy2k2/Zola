@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Text, Button, useTheme, List, Divider, IconButton } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/auth.service';
 import ConfirmModal from '@/components/ui/confirm-modal';
+import { orderService, Order, OrderStatus } from '@/services/order.service';
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
     const router = useRouter();
 
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+    const [orderCounts, setOrderCounts] = useState<Record<string, number>>({});
+
+    useFocusEffect(
+        useCallback(() => {
+            orderService.getOrderHistory().then(orders => {
+                const counts: Record<string, number> = {};
+                orders.forEach(o => {
+                    if (o.status === 'RECEIVED') {
+                        // For 'Đánh giá', only count if there's at least one item not yet reviewed
+                        const needsReview = o.items.some(item => !item.reviewed);
+                        if (needsReview) {
+                            counts['RECEIVED'] = (counts['RECEIVED'] || 0) + 1;
+                        }
+                    } else {
+                        counts[o.status] = (counts[o.status] || 0) + 1;
+                    }
+                });
+                setOrderCounts(counts);
+            });
+        }, [])
+    );
 
     const handleLogout = () => {
         setLogoutModalVisible(true);
@@ -71,6 +94,38 @@ export default function ProfileScreen() {
                         onPress={() => router.push('/profile/favorites')}
                         style={styles.listItem}
                     />
+                    <Divider style={styles.divider} />
+
+                    {/* Order Quick-Access */}
+                    <View style={styles.orderShortcuts}>
+                        {[
+                            { label: 'Đang chờ',  status: 'PENDING',   icon: 'clock-outline',          color: '#F59E0B' },
+                            { label: 'Xác nhận',  status: 'CONFIRMED', icon: 'check-circle-outline',    color: '#3B82F6' },
+                            { label: 'Đang Giao', status: 'SHIPPING',  icon: 'truck-fast-outline',      color: '#8B5CF6' },
+                            { label: 'Đánh giá',  status: 'RECEIVED',  icon: 'star-outline',            color: '#F59E0B' },
+                        ].map(item => (
+                            <TouchableOpacity
+                                key={item.status}
+                                style={styles.orderShortcutItem}
+                                activeOpacity={0.7}
+                                onPress={() => router.push(`/orders?status=${item.status}&from=profile`)}
+                            >
+                                <View style={styles.orderShortcutIconWrapper}>
+                                    <View style={[styles.orderShortcutIcon, { backgroundColor: item.color + '18' }]}>
+                                        <MaterialCommunityIcons name={item.icon as any} size={26} color={item.color} />
+                                    </View>
+                                    {(orderCounts[item.status] ?? 0) > 0 && (
+                                        <View style={styles.badge}>
+                                            <Text style={styles.badgeText}>
+                                                {orderCounts[item.status] > 99 ? '99+' : orderCounts[item.status]}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                                <Text style={styles.orderShortcutLabel}>{item.label}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
                     <Divider style={styles.divider} />
 
                     <List.Item
@@ -185,5 +240,51 @@ const styles = StyleSheet.create({
         backgroundColor: '#F0F0F0',
         height: 1,
         marginHorizontal: 16,
-    }
+    },
+    orderShortcuts: {
+        flexDirection: 'row',
+        paddingHorizontal: 12,
+        paddingVertical: 16,
+        gap: 8,
+    },
+    orderShortcutItem: {
+        flex: 1,
+        alignItems: 'center',
+        gap: 8,
+    },
+    orderShortcutIcon: {
+        width: 52,
+        height: 52,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    orderShortcutLabel: {
+        fontSize: 11,
+        color: '#444',
+        fontWeight: '500',
+        textAlign: 'center',
+    },
+    orderShortcutIconWrapper: {
+        position: 'relative',
+    },
+    badge: {
+        position: 'absolute',
+        top: -4,
+        right: -8,
+        backgroundColor: '#EF4444',
+        borderRadius: 10,
+        minWidth: 18,
+        height: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 4,
+        borderWidth: 1.5,
+        borderColor: '#FFFFFF',
+    },
+    badgeText: {
+        color: '#FFFFFF',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
 });

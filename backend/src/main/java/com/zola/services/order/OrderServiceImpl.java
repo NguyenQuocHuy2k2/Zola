@@ -260,10 +260,7 @@ public class OrderServiceImpl implements OrderService {
 
         return Arrays.stream(CancellationReason.values())
                 .filter(reason -> reason.getRole() == targetRole || reason.getRole() == ReasonRole.BOTH)
-                .map(reason -> CancellationReasonResponse.builder()
-                        .code(reason.name())
-                        .label(reason.getDescription())
-                        .build())
+                .map(orderConverter::toCancellationReasonResponse)
                 .collect(Collectors.toList());
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, useTheme, ActivityIndicator } from 'react-native-paper';
@@ -13,12 +13,16 @@ import OrderStatusTabs from '@/components/orders/order-status-tabs';
 export default function OrdersScreen() {
     const theme = useTheme();
     const router = useRouter();
-    const { status: initialStatus } = useLocalSearchParams<{ status?: string }>();
+    const { status: initialStatus, from } = useLocalSearchParams<{ status?: string; from?: string }>();
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<string>(initialStatus || 'PENDING');
     const initialLoadDone = useRef(false);
+
+    useEffect(() => {
+        if (initialStatus) setActiveTab(initialStatus);
+    }, [initialStatus]);
 
     const loadOrders = async (showLoader = true) => {
         if (showLoader) setLoading(true);
@@ -53,7 +57,7 @@ export default function OrdersScreen() {
         <SafeAreaView style={[styles.container, { backgroundColor: '#FAFAFA' }]} edges={['top', 'left', 'right']}>
             <Stack.Screen options={{ headerShown: false }} />
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.push('/product')} style={styles.backBtn}>
+                <TouchableOpacity onPress={() => from === 'profile' ? router.push('/profile') : (router.canGoBack() ? router.back() : router.push('/product'))} style={styles.backBtn}>
                     <MaterialCommunityIcons name="chevron-left" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Đơn hàng của bạn</Text>

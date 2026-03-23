@@ -5,23 +5,27 @@ import { Text, Button, useTheme } from 'react-native-paper';
 interface OrderDetailActionsProps {
     onCancel: () => void;
     onConfirmReceived?: () => void;
+    onReview?: () => void;
     cancelling: boolean;
     confirming?: boolean;
     canCancel: boolean;
     canConfirm?: boolean;
+    canReview?: boolean;
 }
 
 const OrderDetailActions: React.FC<OrderDetailActionsProps> = ({ 
     onCancel, 
     onConfirmReceived, 
+    onReview,
     cancelling, 
     confirming, 
     canCancel, 
-    canConfirm 
+    canConfirm,
+    canReview,
 }) => {
     const theme = useTheme();
 
-    if (!canCancel && !canConfirm) return null;
+    if (!canCancel && !canConfirm && !canReview) return null;
 
     return (
         <View style={styles.actionSection}>
@@ -54,6 +58,19 @@ const OrderDetailActions: React.FC<OrderDetailActionsProps> = ({
                     icon="check-circle-outline"
                 >
                     Đã Nhận Hàng
+                </Button>
+            )}
+
+            {canReview && (
+                <Button
+                    mode="contained"
+                    buttonColor="#F59E0B"
+                    onPress={onReview}
+                    style={{ marginTop: 12, borderRadius: 12 }}
+                    labelStyle={{ fontWeight: 'bold', color: '#fff' }}
+                    icon="star-outline"
+                >
+                    Đánh Giá Sản Phẩm
                 </Button>
             )}
         </View>

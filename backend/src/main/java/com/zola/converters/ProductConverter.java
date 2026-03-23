@@ -1,34 +1,29 @@
 package com.zola.converters;
 
-import com.zola.dto.response.attribute.ColorResponse;
-import com.zola.dto.response.attribute.SizeResponse;
 import com.zola.dto.response.category.CategoryResponse;
 import com.zola.dto.response.product.ProductImageResponse;
 import com.zola.dto.response.product.ProductResponse;
 import com.zola.dto.response.product.ProductVariantResponse;
 import com.zola.entity.Product;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class ProductConverter {
+
+	private final CategoryConverter categoryConverter;
+	private final AttributeConverter attributeConverter;
 
 	public ProductResponse toProductResponse(Product product) {
 		if (product == null) {
 			return null;
 		}
 
-		CategoryResponse categoryResponse = null;
-		if (product.getCategory() != null) {
-			categoryResponse = CategoryResponse.builder()
-					.id(product.getCategory().getId())
-					.name(product.getCategory().getName())
-					.description(product.getCategory().getDescription())
-					.imageUrl(product.getCategory().getImageUrl())
-					.build();
-		}
+		CategoryResponse categoryResponse = categoryConverter.toCategoryResponse(product.getCategory());
 
 		List<ProductImageResponse> imageResponses = product.getImages() != null ? product.getImages().stream()
 				.map(img -> ProductImageResponse.builder()
@@ -41,28 +36,13 @@ public class ProductConverter {
 		List<ProductVariantResponse> variantResponses = product.getVariants() != null
 				? product.getVariants().stream()
 						.filter(v -> v.getDeletedAt() == null)
-						.map(v -> {
-							SizeResponse sizeResp = v.getSize() != null
-									? SizeResponse.builder()
-											.id(v.getSize().getId())
-											.name(v.getSize().getName())
-											.build()
-									: null;
-
-							ColorResponse colorResp = v.getColor() != null ? ColorResponse
-									.builder()
-									.id(v.getColor().getId())
-									.name(v.getColor().getName())
-									.hexCode(v.getColor().getHexCode())
-									.build() : null;
-
-							return ProductVariantResponse.builder()
-									.id(v.getId())
-									.size(sizeResp)
-									.color(colorResp)
-									.stockQuantity(v.getStockQuantity())
-									.build();
-						}).collect(Collectors.toList())
+						.map(v -> ProductVariantResponse.builder()
+								.id(v.getId())
+								.size(attributeConverter.toSizeResponse(v.getSize()))
+								.color(attributeConverter.toColorResponse(v.getColor()))
+								.stockQuantity(v.getStockQuantity())
+								.build())
+						.collect(Collectors.toList())
 				: null;
 
 		return ProductResponse.builder()

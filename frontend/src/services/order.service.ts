@@ -21,6 +21,7 @@ export interface OrderItem {
     imageUrl: string;
     quantity: number;
     price: number;
+    reviewed?: boolean;
 }
 
 export interface Order {

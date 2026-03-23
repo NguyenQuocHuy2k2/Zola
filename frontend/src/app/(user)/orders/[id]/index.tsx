@@ -127,6 +127,14 @@ export default function OrderDetailScreen() {
         return order?.status === 'SHIPPING';
     };
 
+    const canReview = () => {
+        return order?.status === 'RECEIVED';
+    };
+
+    const handleReview = () => {
+        router.push(`/orders/${id}/review`);
+    };
+
     if (loading) {
         return (
             <View style={styles.centerContainer}>
@@ -166,8 +174,10 @@ export default function OrderDetailScreen() {
                 <OrderDetailActions 
                     canCancel={canCancel()} 
                     canConfirm={canConfirm()}
+                    canReview={canReview()}
                     onCancel={handleCancelOrder} 
                     onConfirmReceived={handleConfirmReceived}
+                    onReview={handleReview}
                     cancelling={cancelling} 
                     confirming={confirming}
                 />

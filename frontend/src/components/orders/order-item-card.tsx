@@ -66,12 +66,22 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
                 <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
                     {getStatusLabel(item.status).toUpperCase()}
                 </Text>
-                <TouchableOpacity
-                    style={styles.detailsBtn}
-                    onPress={() => router.push(`/orders/${item.id}`)}
-                >
-                    <Text style={styles.detailsBtnText}>Chi tiết</Text>
-                </TouchableOpacity>
+                <View style={styles.footerActions}>
+                    {item.status === 'RECEIVED' && item.items.some(i => !i.reviewed) && (
+                        <TouchableOpacity
+                            style={styles.reviewBtn}
+                            onPress={() => router.push(`/orders/${item.id}/review`)}
+                        >
+                            <Text style={styles.reviewBtnText}>Đánh giá</Text>
+                        </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                        style={styles.detailsBtn}
+                        onPress={() => router.push(`/orders/${item.id}`)}
+                    >
+                        <Text style={styles.detailsBtnText}>Chi tiết</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </TouchableOpacity>
     );
@@ -215,6 +225,21 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         color: '#222',
+    },
+    footerActions: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    reviewBtn: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: '#F59E0B',
+    },
+    reviewBtnText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: 'white',
     }
 });
 

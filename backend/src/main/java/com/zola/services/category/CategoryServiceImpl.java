@@ -1,10 +1,9 @@
 package com.zola.services.category;
 
+import com.zola.converters.CategoryConverter;
 import com.zola.dto.request.category.CategoryRequest;
 import com.zola.dto.response.category.CategoryResponse;
 import com.zola.entity.Category;
-import com.zola.exception.AppException;
-import com.zola.exception.ErrorCode;
 import com.zola.repository.CategoryRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     CategoryRepository categoryRepository;
+    CategoryConverter categoryConverter;
 
     @Override
     public CategoryResponse createCategory(CategoryRequest request) {
@@ -29,13 +29,13 @@ public class CategoryServiceImpl implements CategoryService {
                 .imageUrl(request.getImageUrl())
                 .build();
         category = categoryRepository.save(category);
-        return mapToResponse(category);
+        return categoryConverter.toCategoryResponse(category);
     }
 
     @Override
     public List<CategoryResponse> getAllCategories() {
         return categoryRepository.findAll().stream()
-                .map(this::mapToResponse)
+                .map(categoryConverter::toCategoryResponse)
                 .collect(Collectors.toList());
     }
 
@@ -43,7 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse getCategory(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
-        return mapToResponse(category);
+        return categoryConverter.toCategoryResponse(category);
     }
 
     @Override
@@ -54,20 +54,11 @@ public class CategoryServiceImpl implements CategoryService {
         category.setDescription(request.getDescription());
         category.setImageUrl(request.getImageUrl());
         category = categoryRepository.save(category);
-        return mapToResponse(category);
+        return categoryConverter.toCategoryResponse(category);
     }
 
     @Override
     public void deleteCategory(Long id) {
         categoryRepository.deleteById(id);
-    }
-
-    private CategoryResponse mapToResponse(Category category) {
-        return CategoryResponse.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .description(category.getDescription())
-                .imageUrl(category.getImageUrl())
-                .build();
     }
 }

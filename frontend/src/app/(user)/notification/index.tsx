@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, useTheme, IconButton, ActivityIndicator, Divider } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import notificationService, { NotificationResponse, NotificationType } from '@/services/notification.service';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { useTheme, ActivityIndicator, Divider } from 'react-native-paper';
+import notificationService, { NotificationResponse } from '@/services/notification.service';
 import { useNotification } from '@/contexts/NotificationContext';
+import { NotificationItem } from '@/components/notification/notification-item';
+import { NotificationHeader } from '@/components/notification/notification-header';
+import { EmptyNotification } from '@/components/notification/empty-notification';
 
 export default function NotificationScreen() {
     const theme = useTheme();
@@ -65,55 +65,12 @@ export default function NotificationScreen() {
         }
     };
 
-    const getNotificationIcon = (type: NotificationType) => {
-        switch (type) {
-            case NotificationType.ORDER:
-                return { name: 'package-variant-closed', color: '#2196F3' };
-            case NotificationType.PROMOTION:
-                return { name: 'ticket-percent-outline', color: '#F44336' };
-            case NotificationType.SYSTEM:
-                return { name: 'shield-check-outline', color: '#4CAF50' };
-            default:
-                return { name: 'bell-outline', color: '#757575' };
-        }
-    };
-
-    const renderItem = ({ item }: { item: NotificationResponse }) => {
-        const icon = getNotificationIcon(item.type);
-        const formattedDate = format(new Date(item.createdAt), 'HH:mm, dd/MM/yyyy', { locale: vi });
-
-        return (
-            <TouchableOpacity 
-                style={[styles.notificationItem, !item.read && styles.unreadItem]}
-                onPress={() => handleMarkAsRead(item.id)}
-                activeOpacity={0.7}
-            >
-                <View style={[styles.iconContainer, { backgroundColor: icon.color + '15' }]}>
-                    <MaterialCommunityIcons name={icon.name as any} size={24} color={icon.color} />
-                </View>
-                <View style={styles.textContainer}>
-                    <View style={styles.itemHeader}>
-                        <Text style={[styles.title, !item.read && styles.unreadTitle]}>{item.title}</Text>
-                        {!item.read && <View style={styles.unreadDot} />}
-                    </View>
-                    <Text style={styles.message} numberOfLines={2}>{item.message}</Text>
-                    <Text style={styles.date}>{formattedDate}</Text>
-                </View>
-            </TouchableOpacity>
-        );
-    };
-
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#FAFAFA' }]} edges={['top', 'left', 'right']}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Thông báo</Text>
-                <IconButton
-                    icon="check-all"
-                    size={22}
-                    iconColor={theme.colors.primary}
-                    onPress={handleMarkAllAsRead}
-                />
-            </View>
+            <NotificationHeader 
+                title="Thông báo" 
+                onMarkAllAsRead={handleMarkAllAsRead} 
+            />
 
             {loading ? (
                 <View style={styles.centerContainer}>
@@ -122,7 +79,9 @@ export default function NotificationScreen() {
             ) : notifications.length > 0 ? (
                 <FlatList
                     data={notifications}
-                    renderItem={renderItem}
+                    renderItem={({ item }) => (
+                        <NotificationItem item={item} onPress={handleMarkAsRead} />
+                    )}
                     keyExtractor={item => item.id.toString()}
                     contentContainerStyle={styles.listContent}
                     ItemSeparatorComponent={() => <Divider style={styles.divider} />}
@@ -135,15 +94,10 @@ export default function NotificationScreen() {
                     }
                 />
             ) : (
-                <View style={styles.emptyContainer}>
-                    <View style={styles.iconCircle}>
-                        <MaterialCommunityIcons name="bell-off-outline" size={48} color="#ccc" />
-                    </View>
-                    <Text style={styles.emptyTitle}>Chưa có thông báo nào</Text>
-                    <Text style={styles.emptySubtitle}>
-                        Thông báo về đơn hàng và ưu đãi sẽ xuất hiện tại đây.
-                    </Text>
-                </View>
+                <EmptyNotification 
+                    title="Chưa có thông báo nào" 
+                    subtitle="Thông báo về đơn hàng và ưu đãi sẽ xuất hiện tại đây." 
+                />
             )}
         </SafeAreaView>
     );
@@ -153,77 +107,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 8,
-        justifyContent: 'space-between',
-        backgroundColor: '#FAFAFA',
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#222',
-    },
     listContent: {
         flexGrow: 1,
         paddingBottom: 20,
-    },
-    notificationItem: {
-        flexDirection: 'row',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        backgroundColor: '#fff',
-    },
-    unreadItem: {
-        backgroundColor: '#f0f7ff',
-    },
-    iconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 16,
-    },
-    textContainer: {
-        flex: 1,
-    },
-    itemHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    title: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#444',
-        flex: 1,
-    },
-    unreadTitle: {
-        fontWeight: 'bold',
-        color: '#222',
-    },
-    unreadDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#2196F3',
-        marginLeft: 8,
-    },
-    message: {
-        fontSize: 14,
-        color: '#666',
-        lineHeight: 20,
-        marginBottom: 8,
-    },
-    date: {
-        fontSize: 12,
-        color: '#999',
     },
     divider: {
         height: 1,
@@ -233,33 +119,5 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 40,
-        paddingBottom: 100,
-    },
-    iconCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#f5f5f5',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    emptyTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 8,
-    },
-    emptySubtitle: {
-        fontSize: 14,
-        color: '#777',
-        textAlign: 'center',
-        lineHeight: 22,
     },
 });

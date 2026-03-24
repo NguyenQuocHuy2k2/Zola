@@ -30,6 +30,7 @@ export default function OrderDetailScreen() {
     const [confirmReceivedModalVisible, setConfirmReceivedModalVisible] = useState(false);
     const [reasonModalVisible, setReasonModalVisible] = useState(false);
     const [reasons, setReasons] = useState<CancellationReasonResponse[]>([]);
+    const [userReasonsOnly, setUserReasonsOnly] = useState<CancellationReasonResponse[]>([]);
     const [statusModal, setStatusModal] = useState<{
         visible: boolean;
         type: 'success' | 'error';
@@ -61,6 +62,7 @@ export default function OrderDetailScreen() {
                 orderService.getCancellationReasons('ADMIN'),
             ]);
             setOrder(orderData);
+            setUserReasonsOnly(userReasons);
             // Merge both reason lists so label lookup works regardless of who cancelled
             const merged = [...userReasons, ...adminReasons.filter(
                 a => !userReasons.some(u => u.code === a.code)
@@ -222,7 +224,7 @@ export default function OrderDetailScreen() {
                         <Text style={styles.modalTitle}>Lý do hủy đơn hàng</Text>
                     </View>
                     <ScrollView>
-                        {reasons.map((reason) => (
+                        {userReasonsOnly.map((reason) => (
                             <TouchableOpacity 
                                 key={reason.code} 
                                 style={styles.reasonOption}

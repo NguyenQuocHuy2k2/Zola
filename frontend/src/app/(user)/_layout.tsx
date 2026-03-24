@@ -3,11 +3,13 @@ import React from 'react';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
     const theme = useTheme();
     const segments = useSegments();
+    const { unreadCount } = useNotification();
 
     // Hide the tab bar when inside nested profile screens or product detail/category/search screens
     const hideTabBar =
@@ -55,6 +57,7 @@ export default function TabLayout() {
                 options={{
                     title: 'Thông báo',
                     tabBarIcon: ({ color }) => <MaterialCommunityIcons name="bell-outline" size={24} color={color} />,
+                    tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
                 }}
             />
             <Tabs.Screen

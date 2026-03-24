@@ -46,6 +46,7 @@ export default function OrderDetailScreen() {
     const [cancelling, setCancelling] = useState(false);
     const [reasonModalVisible, setReasonModalVisible] = useState(false);
     const [reasons, setReasons] = useState<CancellationReasonResponse[]>([]);
+    const [adminReasonsOnly, setAdminReasonsOnly] = useState<CancellationReasonResponse[]>([]);
     const [selectedReason, setSelectedReason] = useState<CancellationReason | null>(null);
     const [statusModal, setStatusModal] = useState<{
         visible: boolean;
@@ -62,12 +63,18 @@ export default function OrderDetailScreen() {
         if (!id) return;
         setLoading(true);
         try {
-            const [orderData, reasonsData] = await Promise.all([
+            const [orderData, userReasons, adminReasons] = await Promise.all([
                 orderService.getOrderById(id),
+                orderService.getCancellationReasons('USER'),
                 orderService.getCancellationReasons('ADMIN')
             ]);
             setOrder(orderData);
-            setReasons(reasonsData);
+            setAdminReasonsOnly(adminReasons);
+            // Merge both reason lists so label lookup works regardless of who cancelled
+            const merged = [...userReasons, ...adminReasons.filter(
+                a => !userReasons.some(u => u.code === a.code)
+            )];
+            setReasons(merged);
         } catch (error) {
             console.error('Load order detail failed', error);
         } finally {
@@ -195,7 +202,7 @@ export default function OrderDetailScreen() {
             <CancellationReasonModal 
                 visible={reasonModalVisible}
                 onDismiss={() => setReasonModalVisible(false)}
-                reasons={reasons}
+                reasons={adminReasonsOnly}
                 selectedReason={selectedReason}
                 setSelectedReason={setSelectedReason}
                 onConfirm={() => selectedReason && handleCancelOrder(selectedReason)}

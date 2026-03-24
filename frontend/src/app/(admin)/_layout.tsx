@@ -2,9 +2,11 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export default function AdminLayout() {
     const theme = useTheme();
+    const { unreadCount } = useNotification();
 
     return (
         <Tabs
@@ -13,7 +15,13 @@ export default function AdminLayout() {
                 headerShown: false,
             }}>
             <Tabs.Screen
-                name="dashboard/index"
+                name="index"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="dashboard"
                 options={{
                     title: 'Dashboard',
                     tabBarIcon: ({ color }) => <MaterialCommunityIcons name="view-dashboard" size={24} color={color} />,
@@ -33,13 +41,14 @@ export default function AdminLayout() {
                     tabBarIcon: ({ color }) => <MaterialCommunityIcons name="clipboard-list" size={24} color={color} />,
                 }}
             />
-            {/* Hidden sub-pages to silence warnings */}
-            <Tabs.Screen name="products/index" options={{ href: null }} />
-            <Tabs.Screen name="products/create/index" options={{ href: null }} />
-            <Tabs.Screen name="products/[id]/index" options={{ href: null }} />
-            <Tabs.Screen name="products/[id]/variant/index" options={{ href: null }} />
-            <Tabs.Screen name="orders/index" options={{ href: null }} />
-            <Tabs.Screen name="index" options={{ href: null }} />
+            <Tabs.Screen
+                name="notification"
+                options={{
+                    title: 'Thông báo',
+                    tabBarIcon: ({ color }) => <MaterialCommunityIcons name="bell-outline" size={24} color={color} />,
+                    tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+                }}
+            />
         </Tabs>
     );
 }

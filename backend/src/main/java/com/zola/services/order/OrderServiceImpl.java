@@ -18,6 +18,8 @@ import com.zola.repository.UserRepository;
 import com.zola.exception.AppException;
 import com.zola.exception.ErrorCode;
 import com.zola.utils.SecurityUtils;
+import com.zola.services.notification.NotificationService;
+import com.zola.enums.NotificationType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -41,6 +43,7 @@ public class OrderServiceImpl implements OrderService {
     CartItemRepository cartItemRepository;
     UserRepository userRepository;
     OrderConverter orderConverter;
+    NotificationService notificationService;
 
     static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     static final SecureRandom RANDOM = new SecureRandom();
@@ -104,6 +107,15 @@ public class OrderServiceImpl implements OrderService {
         // Clear cart after successful checkout
         cartItemRepository.deleteAll(cartItems);
 
+        // Create notification for new order
+        notificationService.createNotification(user, "Đặt hàng thành công", 
+            "Đơn hàng " + savedOrder.getOrderCode() + " của bạn đã được đặt thành công.", 
+            NotificationType.ORDER);
+
+        notificationService.notifyAdmins("Đơn hàng mới", 
+            "Có đơn hàng mới " + savedOrder.getOrderCode() + " cần được xác nhận.", 
+            NotificationType.ORDER);
+
         return orderConverter.toOrderResponse(savedOrder);
     }
 
@@ -159,7 +171,14 @@ public class OrderServiceImpl implements OrderService {
             order.setCancellationReason(reason);
         }
 
-        return orderConverter.toOrderResponse(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+
+        // Create notification for status update
+        String title = "Cập nhật đơn hàng";
+        String message = "Đơn hàng " + savedOrder.getOrderCode() + " của bạn đã chuyển sang trạng thái: " + newStatus.name();
+        notificationService.createNotification(savedOrder.getUser(), title, message, NotificationType.ORDER);
+
+        return orderConverter.toOrderResponse(savedOrder);
     }
 
     private void validateStatusTransition(OrderStatus oldStatus, OrderStatus newStatus) {
@@ -241,6 +260,15 @@ public class OrderServiceImpl implements OrderService {
         }
 
         updateStatus(id, OrderStatus.CANCELLED, reason);
+
+        // Notify admins if cancelled by user
+        if (!isAdmin) {
+            notificationService.notifyAdmins(
+                "Đơn hàng bị khách hủy",
+                "Đơn hàng " + order.getOrderCode() + " đã bị khách hàng hủy.",
+                com.zola.enums.NotificationType.ORDER
+            );
+        }
     }
 
     private String generateOrderCode() {

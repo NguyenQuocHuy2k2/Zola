@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { Text, useTheme, ActivityIndicator, Divider, Appbar, IconButton } from 'react-native-paper';
+import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, useTheme, IconButton, ActivityIndicator, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import notificationService, { NotificationResponse, NotificationType } from '@/services/notification.service';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useNotification } from '@/contexts/NotificationContext';
 
-export default function NotificationScreen() {
+export default function AdminNotificationScreen() {
     const theme = useTheme();
-    const { refreshUnreadCount, unreadCount } = useNotification();
-    const prevUnreadCountRef = useRef(unreadCount);
+    const { refreshUnreadCount } = useNotification();
     const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchNotifications = useCallback(async (isRefreshing = false) => {
+    const fetchNotifications = React.useCallback(async (isRefreshing = false) => {
         if (isRefreshing) setRefreshing(true);
         else setLoading(true);
 
@@ -34,14 +34,11 @@ export default function NotificationScreen() {
     useEffect(() => {
         fetchNotifications();
     }, [fetchNotifications]);
-    
-    // Auto-refresh notifications when unreadCount increases (polling detected new notifications)
-    useEffect(() => {
-        if (unreadCount > prevUnreadCountRef.current) {
-            fetchNotifications(true);
-        }
-        prevUnreadCountRef.current = unreadCount;
-    }, [unreadCount, fetchNotifications]);
+
+    const onRefresh = () => {
+        fetchNotifications(true);
+        refreshUnreadCount();
+    };
 
     const handleMarkAsRead = async (id: number) => {
         try {
@@ -65,48 +62,59 @@ export default function NotificationScreen() {
         }
     };
 
-    const getNotificationIcon = (type: NotificationType) => {
+    const getIcon = (type: NotificationType) => {
         switch (type) {
             case NotificationType.ORDER:
-                return { name: 'package-variant-closed', color: '#2196F3' };
+                return 'clipboard-list-outline';
             case NotificationType.PROMOTION:
-                return { name: 'ticket-percent-outline', color: '#F44336' };
+                return 'tag-outline';
             case NotificationType.SYSTEM:
-                return { name: 'shield-check-outline', color: '#4CAF50' };
+                return 'cog-outline';
             default:
-                return { name: 'bell-outline', color: '#757575' };
+                return 'bell-outline';
         }
     };
 
-    const renderItem = ({ item }: { item: NotificationResponse }) => {
-        const icon = getNotificationIcon(item.type);
-        const formattedDate = format(new Date(item.createdAt), 'HH:mm, dd/MM/yyyy', { locale: vi });
-
-        return (
-            <TouchableOpacity 
-                style={[styles.notificationItem, !item.read && styles.unreadItem]}
-                onPress={() => handleMarkAsRead(item.id)}
-                activeOpacity={0.7}
-            >
-                <View style={[styles.iconContainer, { backgroundColor: icon.color + '15' }]}>
-                    <MaterialCommunityIcons name={icon.name as any} size={24} color={icon.color} />
-                </View>
-                <View style={styles.textContainer}>
-                    <View style={styles.itemHeader}>
-                        <Text style={[styles.title, !item.read && styles.unreadTitle]}>{item.title}</Text>
-                        {!item.read && <View style={styles.unreadDot} />}
-                    </View>
-                    <Text style={styles.message} numberOfLines={2}>{item.message}</Text>
-                    <Text style={styles.date}>{formattedDate}</Text>
-                </View>
-            </TouchableOpacity>
-        );
+    const getIconColor = (type: NotificationType) => {
+        switch (type) {
+            case NotificationType.ORDER:
+                return '#2196F3';
+            case NotificationType.PROMOTION:
+                return '#F44336';
+            case NotificationType.SYSTEM:
+                return '#9E9E9E';
+            default:
+                return theme.colors.primary;
+        }
     };
+
+    const renderItem = ({ item }: { item: NotificationResponse }) => (
+        <TouchableOpacity 
+            style={[styles.notificationItem, !item.read && styles.unreadItem]} 
+            onPress={() => handleMarkAsRead(item.id)}
+            activeOpacity={0.7}
+        >
+            <View style={[styles.iconContainer, { backgroundColor: `${getIconColor(item.type)}15` }]}>
+                <MaterialCommunityIcons name={getIcon(item.type)} size={24} color={getIconColor(item.type)} />
+            </View>
+            <View style={styles.contentContainer}>
+                <View style={styles.headerRow}>
+                    <Text style={[styles.title, !item.read && styles.unreadText]}>{item.title}</Text>
+                    {!item.read && <View style={styles.unreadDot} />}
+                </View>
+                <Text style={styles.message} numberOfLines={2}>{item.message}</Text>
+                <Text style={styles.time}>
+                    {format(new Date(item.createdAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
+                </Text>
+            </View>
+        </TouchableOpacity>
+    );
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#FAFAFA' }]} edges={['top', 'left', 'right']}>
+            <Stack.Screen options={{ headerShown: false }} />
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Thông báo</Text>
+                <Text style={styles.headerTitle}>Thông báo Admin</Text>
                 <IconButton
                     icon="check-all"
                     size={22}
@@ -116,34 +124,35 @@ export default function NotificationScreen() {
             </View>
 
             {loading ? (
-                <View style={styles.centerContainer}>
-                    <ActivityIndicator color={theme.colors.primary} size="large" />
+                <View style={styles.center}>
+                    <ActivityIndicator size="large" />
                 </View>
-            ) : notifications.length > 0 ? (
+            ) : (
                 <FlatList
                     data={notifications}
                     renderItem={renderItem}
                     keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={styles.listContent}
                     ItemSeparatorComponent={() => <Divider style={styles.divider} />}
+                    contentContainerStyle={styles.listContent}
                     refreshControl={
-                        <RefreshControl
-                            refreshing={refreshing}
-                            onRefresh={() => fetchNotifications(true)}
-                            colors={[theme.colors.primary]}
+                        <RefreshControl 
+                            refreshing={refreshing} 
+                            onRefresh={onRefresh}
+                            colors={[theme.colors.primary]} 
                         />
                     }
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <View style={styles.iconCircle}>
+                                <MaterialCommunityIcons name="bell-off-outline" size={48} color="#CCC" />
+                            </View>
+                            <Text style={styles.emptyTitle}>Chưa có thông báo nào</Text>
+                            <Text style={styles.emptySubtitle}>
+                                Các thông báo về đơn hàng mới sẽ xuất hiện tại đây.
+                            </Text>
+                        </View>
+                    }
                 />
-            ) : (
-                <View style={styles.emptyContainer}>
-                    <View style={styles.iconCircle}>
-                        <MaterialCommunityIcons name="bell-off-outline" size={48} color="#ccc" />
-                    </View>
-                    <Text style={styles.emptyTitle}>Chưa có thông báo nào</Text>
-                    <Text style={styles.emptySubtitle}>
-                        Thông báo về đơn hàng và ưu đãi sẽ xuất hiện tại đây.
-                    </Text>
-                </View>
             )}
         </SafeAreaView>
     );
@@ -152,6 +161,7 @@ export default function NotificationScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#F8F9FA',
     },
     header: {
         flexDirection: 'row',
@@ -159,27 +169,31 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 8,
         justifyContent: 'space-between',
-        backgroundColor: '#FAFAFA',
+        backgroundColor: '#FFF',
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: '#EEE',
     },
     headerTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#222',
     },
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     listContent: {
-        flexGrow: 1,
-        paddingBottom: 20,
+        paddingVertical: 8,
     },
     notificationItem: {
         flexDirection: 'row',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        backgroundColor: '#fff',
+        padding: 16,
+        backgroundColor: '#FFF',
+        alignItems: 'center',
     },
     unreadItem: {
-        backgroundColor: '#f0f7ff',
+        backgroundColor: '#F0F7FF',
     },
     iconContainer: {
         width: 48,
@@ -189,24 +203,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 16,
     },
-    textContainer: {
+    contentContainer: {
         flex: 1,
     },
-    itemHeader: {
+    headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 4,
     },
     title: {
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: '600',
-        color: '#444',
+        color: '#1D1D1D',
         flex: 1,
     },
-    unreadTitle: {
+    unreadText: {
         fontWeight: 'bold',
-        color: '#222',
     },
     unreadDot: {
         width: 8,
@@ -219,20 +232,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#666',
         lineHeight: 20,
-        marginBottom: 8,
+        marginBottom: 4,
     },
-    date: {
+    time: {
         fontSize: 12,
         color: '#999',
     },
     divider: {
-        height: 1,
-        backgroundColor: '#f0f0f0',
-    },
-    centerContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        height: 0.5,
+        backgroundColor: '#EEE',
     },
     emptyContainer: {
         flex: 1,
@@ -245,7 +253,7 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#F5F5F5',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,

@@ -11,6 +11,7 @@ import { Colors } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { RealmProvider } from '@/storage/realm';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 export const unstable_settings = {
     anchor: '(user)',
@@ -104,7 +105,9 @@ export default function RootLayout() {
                 <PaperProvider theme={customPaperTheme}>
                     <RealmProvider>
                         <AuthProvider>
-                            <AppContent />
+                            <NotificationProvider>
+                                <AppContent />
+                            </NotificationProvider>
                         </AuthProvider>
                     </RealmProvider>
                 </PaperProvider>

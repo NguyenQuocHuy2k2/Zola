@@ -58,6 +58,13 @@ public class Order {
     @Column(name = "cancellation_reason")
     com.zola.enums.CancellationReason cancellationReason;
 
+    @Column(name = "discount_amount")
+    BigDecimal discountAmount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucher_id")
+    Voucher voucher;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     LocalDateTime createdAt;

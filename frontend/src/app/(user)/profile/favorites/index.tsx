@@ -83,15 +83,16 @@ export default function FavoritesScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: '#F8F9FA' }]}>
       <View style={styles.header}>
         <IconButton
           icon="chevron-left"
-          size={24}
+          size={28}
           onPress={() => router.back()}
           style={styles.backButton}
         />
-        <Text variant="headlineSmall" style={styles.headerTitle}>Sản phẩm yêu thích</Text>
+        <Text style={styles.headerTitle}>Sản phẩm yêu thích</Text>
+        <View style={{ width: 44 }} />
       </View>
 
       <FavoriteList
@@ -109,17 +110,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 12,
-    paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    paddingTop: 12,
+    paddingBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   backButton: {
-    marginLeft: -8,
-    marginRight: 4,
+    backgroundColor: '#F8F9FA',
   },
   headerTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#222',
   },
   centerContainer: {
     flex: 1,

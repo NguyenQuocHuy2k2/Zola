@@ -4,11 +4,12 @@ import { useTheme, ActivityIndicator, IconButton, Text } from 'react-native-pape
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { cartService, CartItem } from '@/services/cart.service';
 import { orderService, PaymentMethod } from '@/services/order.service';
-import { promotionService, Voucher } from '@/services/promotion.service';
+import voucherService, { Voucher } from '@/services/voucher.service';
 import { formatPrice, formatFullAddress } from '@/utils/format';
 import { addressService, Address } from '@/services/address.service';
 import { profileService } from '@/services/profile.service';
 import { AddressSelectionModal } from '@/components/address/address-selection-modal';
+import { VoucherSelectionModal } from '@/components/voucher/voucher-selection-modal';
 import StatusModal, { StatusType } from '@/components/ui/status-modal';
 import ConfirmModal from '@/components/ui/confirm-modal';
 
@@ -41,6 +42,7 @@ export default function CheckoutScreen() {
     const [voucherCode, setVoucherCode] = useState('');
     const [appliedVoucher, setAppliedVoucher] = useState<{ discount: number, voucher: Voucher } | null>(null);
     const [applyingVoucher, setApplyingVoucher] = useState(false);
+    const [voucherModalVisible, setVoucherModalVisible] = useState(false);
 
     const [statusModalVisible, setStatusModalVisible] = useState(false);
     const [statusConfig, setStatusConfig] = useState<{ type: StatusType, title: string, message: string }>({
@@ -107,7 +109,7 @@ export default function CheckoutScreen() {
         if (!voucherCode) return;
         setApplyingVoucher(true);
         try {
-            const result = await promotionService.applyVoucher(voucherCode, totalItemPrice);
+            const result = await voucherService.applyVoucher(voucherCode, totalItemPrice);
             setAppliedVoucher({ discount: result.discountAmount, voucher: result.voucher });
             setStatusConfig({
                 type: 'success',
@@ -126,6 +128,17 @@ export default function CheckoutScreen() {
         } finally {
             setApplyingVoucher(false);
         }
+    };
+
+    const handleSelectVoucher = (voucher: Voucher) => {
+        setVoucherCode(voucher.code);
+        setAppliedVoucher({
+            discount: voucher.discountType === 'FIXED' 
+                ? voucher.discountValue 
+                : Math.min(totalItemPrice * (voucher.discountValue / 100), voucher.maxDiscountAmount || Infinity),
+            voucher
+        });
+        setVoucherModalVisible(false);
     };
 
     const handleCheckout = async () => {
@@ -160,7 +173,8 @@ export default function CheckoutScreen() {
                 phoneNumber: phone,
                 paymentMethod: paymentMethod,
                 notes: notes,
-                cartItemIds: cartItems.map(i => i.id)
+                cartItemIds: cartItems.map(i => i.id),
+                voucherCode: appliedVoucher?.voucher.code
             });
             
             setCreatedOrderId(order.id);
@@ -226,6 +240,7 @@ export default function CheckoutScreen() {
                     handleApplyVoucher={handleApplyVoucher}
                     applyingVoucher={applyingVoucher}
                     appliedVoucher={appliedVoucher}
+                    onOpenVoucherModal={() => setVoucherModalVisible(true)}
                 />
 
                 <CheckoutPayment
@@ -256,6 +271,14 @@ export default function CheckoutScreen() {
                 onClose={() => setAddressModalVisible(false)}
                 onSelect={handleSelectAddress}
                 currentAddressId={selectedAddressId || undefined}
+            />
+
+            <VoucherSelectionModal
+                visible={voucherModalVisible}
+                onClose={() => setVoucherModalVisible(false)}
+                onSelect={handleSelectVoucher}
+                selectedVoucherId={appliedVoucher?.voucher.id}
+                orderTotal={totalItemPrice}
             />
 
             <StatusModal

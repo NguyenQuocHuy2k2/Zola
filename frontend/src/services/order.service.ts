@@ -29,6 +29,7 @@ export interface Order {
     orderCode: string;
     items: OrderItem[];
     totalAmount: number;
+    discountAmount?: number;
     status: OrderStatus;
     customerName?: string;
     shippingAddress: string;
@@ -56,6 +57,7 @@ export const orderService = {
         paymentMethod: PaymentMethod;
         notes?: string;
         cartItemIds?: string[];
+        voucherCode?: string;
     }): Promise<Order> {
         try {
             const response = await api.post('/orders/checkout', params);

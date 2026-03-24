@@ -28,4 +28,6 @@ public class OrderRequest {
 
     @NotEmpty(message = "Danh sách sản phẩm thanh toán không được để trống")
     List<String> cartItemIds;
+
+    String voucherCode;
 }

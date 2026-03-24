@@ -19,7 +19,12 @@ import com.zola.exception.AppException;
 import com.zola.exception.ErrorCode;
 import com.zola.utils.SecurityUtils;
 import com.zola.services.notification.NotificationService;
+import com.zola.services.voucher.VoucherService;
+import com.zola.repository.VoucherRepository;
 import com.zola.enums.NotificationType;
+import com.zola.enums.VoucherStatus;
+import com.zola.enums.DiscountType;
+import com.zola.entity.Voucher;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -44,6 +49,8 @@ public class OrderServiceImpl implements OrderService {
     UserRepository userRepository;
     OrderConverter orderConverter;
     NotificationService notificationService;
+    VoucherService voucherService;
+    VoucherRepository voucherRepository;
 
     static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     static final SecureRandom RANDOM = new SecureRandom();
@@ -101,6 +108,26 @@ public class OrderServiceImpl implements OrderService {
             orderItems.add(orderItem);
         }
         order.setItems(orderItems);
+
+        // Handle Voucher Application
+        if (request.getVoucherCode() != null && !request.getVoucherCode().isEmpty()) {
+            Voucher voucher = voucherRepository.findByCode(request.getVoucherCode().toUpperCase())
+                    .orElseThrow(() -> new AppException(ErrorCode.VOUCHER_NOT_FOUND));
+
+            validateVoucher(voucher, user, totalAmount);
+
+            BigDecimal discount = calculateDiscount(voucher, totalAmount);
+            order.setDiscountAmount(discount);
+            order.setVoucher(voucher);
+            
+            // Subtract discount from total amount
+            totalAmount = totalAmount.subtract(discount);
+            order.setTotalAmount(totalAmount);
+
+            // Mark voucher as used
+            voucher.setStatus(VoucherStatus.USED);
+            voucherRepository.save(voucher);
+        }
 
         Order savedOrder = orderRepository.save(order);
 
@@ -177,6 +204,11 @@ public class OrderServiceImpl implements OrderService {
         String title = "Cập nhật đơn hàng";
         String message = "Đơn hàng " + savedOrder.getOrderCode() + " của bạn đã chuyển sang trạng thái: " + newStatus.name();
         notificationService.createNotification(savedOrder.getUser(), title, message, NotificationType.ORDER);
+
+        // Generate voucher if order is RECEIVED
+        if (newStatus == OrderStatus.RECEIVED) {
+            voucherService.generateVoucherForUser(savedOrder.getUser(), savedOrder.getTotalAmount());
+        }
 
         return orderConverter.toOrderResponse(savedOrder);
     }
@@ -290,5 +322,33 @@ public class OrderServiceImpl implements OrderService {
                 .filter(reason -> reason.getRole() == targetRole || reason.getRole() == ReasonRole.BOTH)
                 .map(orderConverter::toCancellationReasonResponse)
                 .collect(Collectors.toList());
+    }
+
+    private void validateVoucher(Voucher voucher, User user, BigDecimal orderTotal) {
+        if (voucher.getStatus() != VoucherStatus.ACTIVE) {
+            throw new AppException(ErrorCode.VOUCHER_NOT_ACTIVE);
+        }
+        if (voucher.getUser() != null && !voucher.getUser().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.VOUCHER_NOT_BELONG_TO_USER);
+        }
+        if (voucher.getExpiryDate() != null && voucher.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.VOUCHER_EXPIRED);
+        }
+        if (voucher.getMinOrderAmount() != null && orderTotal.compareTo(voucher.getMinOrderAmount()) < 0) {
+            throw new AppException(ErrorCode.VOUCHER_MIN_AMOUNT_NOT_REACHED);
+        }
+    }
+
+    private BigDecimal calculateDiscount(Voucher voucher, BigDecimal orderTotal) {
+        if (voucher.getDiscountType() == DiscountType.FIXED) {
+            return voucher.getDiscountValue().min(orderTotal);
+        } else {
+            BigDecimal discount = orderTotal.multiply(voucher.getDiscountValue())
+                    .divide(new BigDecimal("100"));
+            if (voucher.getMaxDiscountAmount() != null) {
+                discount = discount.min(voucher.getMaxDiscountAmount());
+            }
+            return discount.min(orderTotal);
+        }
     }
 }

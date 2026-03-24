@@ -5,16 +5,25 @@ import { formatPrice } from '@/utils/format';
 
 interface OrderDetailSummaryProps {
     totalAmount: number;
+    discountAmount?: number;
 }
 
-const OrderDetailSummary: React.FC<OrderDetailSummaryProps> = ({ totalAmount }) => {
+const OrderDetailSummary: React.FC<OrderDetailSummaryProps> = ({ totalAmount, discountAmount = 0 }) => {
+    const subtotal = totalAmount + discountAmount;
+    
     return (
         <View style={styles.card}>
             <Text style={styles.sectionTitle}>Chi tiết thanh toán</Text>
             <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Tiền hàng:</Text>
-                <Text style={styles.summaryValue}>{formatPrice(totalAmount)}</Text>
+                <Text style={styles.summaryValue}>{formatPrice(subtotal)}</Text>
             </View>
+            {discountAmount > 0 && (
+                <View style={styles.summaryRow}>
+                    <Text style={[styles.summaryLabel, { color: '#388E3C' }]}>Giảm giá:</Text>
+                    <Text style={[styles.summaryValue, { color: '#388E3C' }]}>-{formatPrice(discountAmount)}</Text>
+                </View>
+            )}
             <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Phí vận chuyển:</Text>
                 <Text style={styles.summaryValue}>{formatPrice(0)}</Text>

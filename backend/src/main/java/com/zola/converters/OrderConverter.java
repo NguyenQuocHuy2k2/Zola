@@ -26,6 +26,7 @@ public class OrderConverter {
                 .status(order.getStatus())
                 .customerName(order.getUser().getFirstName() + " " + order.getUser().getLastName())
                 .totalAmount(order.getTotalAmount())
+                .discountAmount(order.getDiscountAmount())
                 .shippingAddress(order.getShippingAddress())
                 .phoneNumber(order.getPhoneNumber())
                 .paymentMethod(order.getPaymentMethod())

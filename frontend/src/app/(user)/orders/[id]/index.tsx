@@ -166,7 +166,10 @@ export default function OrderDetailScreen() {
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <OrderDetailItems items={order.items} />
-                <OrderDetailSummary totalAmount={order.totalAmount} />
+                <OrderDetailSummary 
+                    totalAmount={order.totalAmount} 
+                    discountAmount={order.discountAmount}
+                />
                 <OrderDetailInfo 
                     paymentMethod={order.paymentMethod} 
                     phoneNumber={order.phoneNumber} 

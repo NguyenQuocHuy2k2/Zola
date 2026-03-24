@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { formatPrice } from '@/utils/format';
 import { getProductPrimaryImage } from '@/services/product.service';
 import { CartItem } from '@/services/cart.service';
-import { Voucher } from '@/services/promotion.service';
+import { Voucher } from '@/services/voucher.service';
 
 interface CheckoutItemsProps {
     cartItems: CartItem[];
@@ -14,6 +14,7 @@ interface CheckoutItemsProps {
     handleApplyVoucher: () => void;
     applyingVoucher: boolean;
     appliedVoucher: { discount: number; voucher: Voucher } | null;
+    onOpenVoucherModal: () => void;
 }
 
 export const CheckoutItems = ({
@@ -22,7 +23,8 @@ export const CheckoutItems = ({
     setVoucherCode,
     handleApplyVoucher,
     applyingVoucher,
-    appliedVoucher
+    appliedVoucher,
+    onOpenVoucherModal
 }: CheckoutItemsProps) => {
     const theme = useTheme();
 
@@ -52,7 +54,7 @@ export const CheckoutItems = ({
             <View style={styles.voucherContainer}>
                 <TextInput
                     mode="outlined"
-                    placeholder="Mã giảm giá (ZOLA100...)"
+                    placeholder="Nhập mã giảm giá..."
                     value={voucherCode}
                     onChangeText={setVoucherCode}
                     style={styles.voucherInput}
@@ -68,9 +70,19 @@ export const CheckoutItems = ({
                     style={styles.applyBtn}
                     labelStyle={{ fontWeight: 'bold', fontSize: 12 }}
                 >
-                    Áp dụng
+                    Dùng mã
                 </Button>
             </View>
+
+            <Button
+                mode="text"
+                icon="ticket-percent-outline"
+                onPress={onOpenVoucherModal}
+                style={styles.selectVoucherBtn}
+                labelStyle={{ fontSize: 13, fontWeight: '600' }}
+            >
+                Chọn voucher từ kho
+            </Button>
 
             {appliedVoucher && (
                 <View style={styles.discountRow}>
@@ -181,5 +193,10 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#388E3C',
         fontWeight: 'bold',
+    },
+    selectVoucherBtn: {
+        alignSelf: 'flex-start',
+        marginTop: 4,
+        marginLeft: -8,
     },
 });

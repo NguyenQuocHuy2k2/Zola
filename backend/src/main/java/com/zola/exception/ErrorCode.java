@@ -39,6 +39,11 @@ public enum ErrorCode {
     ORDER_ITEM_NOT_FOUND("order-item-not-found", "Sản phẩm trong đơn hàng không tồn tại", HttpStatus.NOT_FOUND),
     ORDER_NOT_RECEIVED("order-not-received", "Chỉ có thể đánh giá đơn hàng đã nhận", HttpStatus.BAD_REQUEST),
     REVIEW_ALREADY_EXISTS("review-already-exists", "Sản phẩm này đã được đánh giá", HttpStatus.BAD_REQUEST),
+    VOUCHER_NOT_FOUND("voucher-not-found", "Mã giảm giá không tồn tại", HttpStatus.NOT_FOUND),
+    VOUCHER_NOT_ACTIVE("voucher-not-active", "Mã giảm giá không còn khả dụng", HttpStatus.BAD_REQUEST),
+    VOUCHER_NOT_BELONG_TO_USER("voucher-not-belong-to-user", "Mã giảm giá không thuộc về bạn", HttpStatus.BAD_REQUEST),
+    VOUCHER_EXPIRED("voucher-expired", "Mã giảm giá đã hết hạn", HttpStatus.BAD_REQUEST),
+    VOUCHER_MIN_AMOUNT_NOT_REACHED("voucher-min-amount-not-reached", "Đơn hàng chưa đạt giá trị tối thiểu để sử dụng mã này", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(String code, String message, HttpStatusCode statusCode) {

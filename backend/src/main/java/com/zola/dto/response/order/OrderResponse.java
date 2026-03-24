@@ -21,6 +21,7 @@ public class OrderResponse {
     OrderStatus status;
     String customerName;
     BigDecimal totalAmount;
+    BigDecimal discountAmount;
     String shippingAddress;
     String phoneNumber;
     PaymentMethod paymentMethod;

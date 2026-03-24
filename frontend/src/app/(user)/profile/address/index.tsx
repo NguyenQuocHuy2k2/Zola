@@ -5,7 +5,7 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, useTheme, ActivityIndicator } from 'react-native-paper';
+import { Text, useTheme, ActivityIndicator, IconButton } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { addressService, Address } from '@/services/address.service';
@@ -87,11 +87,14 @@ export default function AddressesScreen() {
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="#1D1D1D" />
-                </TouchableOpacity>
+                <IconButton 
+                    icon="chevron-left" 
+                    size={28} 
+                    onPress={() => router.back()} 
+                    style={styles.backBtn} 
+                />
                 <Text style={styles.headerTitle}>Địa chỉ của tôi</Text>
-                <View style={styles.backBtn} />
+                <View style={{ width: 44 }} />
             </View>
 
             {loading ? (
@@ -155,22 +158,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingHorizontal: 8,
+        paddingTop: 12,
+        paddingBottom: 12,
         backgroundColor: '#FFFFFF',
         borderBottomWidth: 1,
         borderBottomColor: '#F0F0F0',
     },
     backBtn: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: '#F8F9FA',
     },
     headerTitle: {
-        fontSize: 17,
-        fontWeight: '700',
-        color: '#1D1D1D',
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#222',
     },
     center: {
         flex: 1,

@@ -49,6 +49,19 @@ export default function AdminLayout() {
                     tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
                 }}
             />
+            <Tabs.Screen
+                name="chat/index"
+                options={{
+                    title: 'Nhắn tin',
+                    tabBarIcon: ({ color }) => <MaterialCommunityIcons name="facebook-messenger" size={24} color={color} />,
+                }}
+            />
+            <Tabs.Screen
+                name="chat/room/[id]"
+                options={{
+                    href: null,
+                }}
+            />
         </Tabs>
     );
 }

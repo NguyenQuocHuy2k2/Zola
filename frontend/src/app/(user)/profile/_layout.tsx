@@ -7,6 +7,7 @@ export default function ProfileLayout() {
             <Stack.Screen name="settings/index" />
             <Stack.Screen name="change-password/index" />
             <Stack.Screen name="favorites/index" />
+            <Stack.Screen name="chat/index" />
             <Stack.Screen name="address/index" />
             <Stack.Screen name="address/form/index" />
         </Stack>

@@ -12,7 +12,7 @@ import { ChatMessageItem } from '@/components/chat/chat-message-item';
 import { ChatInput } from '@/components/chat/chat-input';
 import { ImageGallery } from '@/components/chat/image-gallery';
 
-const POLLING_INTERVAL = 3000;
+import { useChatSocket } from '@/hooks/use-chat-socket';
 
 export default function AdminChatDetailScreen() {
     const { user } = useAuth();
@@ -31,18 +31,18 @@ export default function AdminChatDetailScreen() {
     const [galleryImages, setGalleryImages] = useState<string[]>([]);
     const [galleryIndex, setGalleryIndex] = useState(0);
 
-    const fetchMessages = useCallback(async (roomId: string) => {
-        try {
-            if (!sending) {
-                const history = await chatService.getMessages(roomId);
-                if (history.length > messages.length) {
-                    setMessages([...history].reverse());
-                }
-            }
-        } catch (error) {
-            console.error('Failed to fetch messages for admin:', error);
+    const { isConnected, messages: socketMessages, setMessages: setSocketMessages } = useChatSocket(id);
+    
+    // Sync socket messages with component state
+    useEffect(() => {
+        if (socketMessages.length > 0) {
+            const lastSocketMsg = socketMessages[socketMessages.length - 1];
+            setMessages(prev => {
+                if (prev.find(m => m.id === lastSocketMsg.id)) return prev;
+                return [lastSocketMsg, ...prev];
+            });
         }
-    }, [messages.length, sending]);
+    }, [socketMessages]);
 
     const initRoom = useCallback(async () => {
         if (!id) return;
@@ -69,12 +69,8 @@ export default function AdminChatDetailScreen() {
     }, [initRoom]);
 
     useEffect(() => {
-        if (!id) return;
-        const interval = setInterval(() => {
-            fetchMessages(id);
-        }, POLLING_INTERVAL);
-        return () => clearInterval(interval);
-    }, [id, fetchMessages]);
+        initRoom();
+    }, [initRoom]);
 
     const handleSend = async (text: string, media: { uri: string, type: AttachmentType }[]) => {
         if (!id) return;

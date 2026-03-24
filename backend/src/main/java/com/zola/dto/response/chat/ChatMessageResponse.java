@@ -13,6 +13,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChatMessageResponse {
     String id;
+    String roomId;
     String senderId;
     String content;
     LocalDateTime timestamp;

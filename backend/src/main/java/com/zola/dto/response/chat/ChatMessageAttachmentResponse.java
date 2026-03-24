@@ -1,9 +1,9 @@
 package com.zola.dto.response.chat;
-
+ 
 import com.zola.enums.AttachmentType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
+ 
 @Data
 @Builder
 @NoArgsConstructor

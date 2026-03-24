@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 public class ChatConverter {
 
     public ChatRoomResponse toChatRoomResponse(ChatRoom room, User otherUser, ChatMessage lastMessage, long unreadCount) {
+        java.time.LocalDateTime time = lastMessage != null ? lastMessage.getTimestamp() : (room.getCreatedAt() != null ? room.getCreatedAt() : java.time.LocalDateTime.now());
+        
         return ChatRoomResponse.builder()
                 .id(room.getId())
                 .otherUserId(otherUser != null ? otherUser.getId() : "unknown")
@@ -23,7 +25,7 @@ public class ChatConverter {
                 .otherUserEmail(otherUser != null ? otherUser.getEmail() : null)
                 .otherUserPhone(otherUser != null ? otherUser.getPhone() : null)
                 .lastMessage(lastMessage != null ? lastMessage.getContent() : null)
-                .lastMessageTime(lastMessage != null ? lastMessage.getTimestamp() : (room.getCreatedAt() != null ? room.getCreatedAt() : java.time.LocalDateTime.now()))
+                .lastMessageTime(time)
                 .unreadCount(unreadCount)
                 .build();
     }
@@ -31,6 +33,7 @@ public class ChatConverter {
     public ChatMessageResponse toChatMessageResponse(ChatMessage message) {
         return ChatMessageResponse.builder()
                 .id(message.getId())
+                .roomId(message.getRoomId())
                 .senderId(message.getSenderId())
                 .content(message.getContent())
                 .timestamp(message.getTimestamp())

@@ -34,6 +34,7 @@ public class ChatServiceImpl implements ChatService {
     private final UserRepository userRepository;
     private final ChatConverter chatConverter;
     private final CloudinaryService cloudinaryService;
+    private final SocketService socketService;
 
     @Override
     public List<ChatRoomResponse> getRooms() {
@@ -71,6 +72,14 @@ public class ChatServiceImpl implements ChatService {
                     chatMessageRepository.save(m);
                 });
 
+        // Notify room about read status
+        if (!messages.isEmpty()) {
+            socketService.sendToRoom(roomId, "messages_read", java.util.Map.of(
+                    "roomId", roomId,
+                    "viewerId", currentUserId
+            ));
+        }
+
         return messages.stream()
                 .map(chatConverter::toChatMessageResponse)
                 .collect(Collectors.toList());
@@ -103,7 +112,12 @@ public class ChatServiceImpl implements ChatService {
             savedMessage.setAttachments(attachmentEntities);
         }
 
-        return chatConverter.toChatMessageResponse(savedMessage);
+        ChatMessageResponse response = chatConverter.toChatMessageResponse(savedMessage);
+        
+        // Broadcast message to room
+        socketService.sendToRoom(roomId, "receive_message", response);
+
+        return response;
     }
 
     @Override

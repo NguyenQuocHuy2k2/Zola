@@ -16,6 +16,7 @@ export interface ChatMessageAttachment {
 
 export interface ChatMessage {
     id: string;
+    roomId: string; // Added for real-time filtering
     senderId: string;
     content: string;
     timestamp: string;

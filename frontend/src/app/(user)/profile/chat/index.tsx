@@ -16,7 +16,7 @@ import { ChatMessageItem } from '@/components/chat/chat-message-item';
 import { ChatInput } from '@/components/chat/chat-input';
 import { ImageGallery } from '@/components/chat/image-gallery';
 
-const POLLING_INTERVAL = 3000; // 3 seconds
+import { useChatSocket } from '@/hooks/use-chat-socket';
 
 export default function UserChatScreen() {
     const { user } = useAuth();
@@ -34,18 +34,18 @@ export default function UserChatScreen() {
     const [galleryImages, setGalleryImages] = useState<string[]>([]);
     const [galleryIndex, setGalleryIndex] = useState(0);
 
-    const fetchMessages = useCallback(async (roomId: string) => {
-        try {
-            if (!sending) {
-                const history = await chatService.getMessages(roomId);
-                if (history.length > messages.length) {
-                    setMessages([...history].reverse());
-                }
-            }
-        } catch (error) {
-            console.error('Failed to fetch messages:', error);
+    const { messages: socketMessages } = useChatSocket(room?.id);
+    
+    // Sync socket messages with component state
+    useEffect(() => {
+        if (socketMessages.length > 0) {
+            const lastSocketMsg = socketMessages[socketMessages.length - 1];
+            setMessages(prev => {
+                if (prev.find(m => m.id === lastSocketMsg.id)) return prev;
+                return [lastSocketMsg, ...prev];
+            });
         }
-    }, [messages.length, sending]);
+    }, [socketMessages]);
 
     const initChat = useCallback(async () => {
         try {
@@ -65,12 +65,8 @@ export default function UserChatScreen() {
     }, [initChat]);
 
     useEffect(() => {
-        if (!room) return;
-        const interval = setInterval(() => {
-            fetchMessages(room.id);
-        }, POLLING_INTERVAL);
-        return () => clearInterval(interval);
-    }, [room, fetchMessages]);
+        initChat();
+    }, [initChat]);
 
     const handleSend = async (text: string, media: { uri: string, type: AttachmentType }[]) => {
         if (!room) return;

@@ -24,4 +24,7 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     @Query("SELECT p FROM ProductVariant p WHERE p.product.id = :productId AND p.deletedAt IS NULL")
     List<ProductVariant> findActiveByProductId(@Param("productId") String productId);
+
+    @Query("SELECT p FROM ProductVariant p WHERE p.stockQuantity <= :threshold AND p.deletedAt IS NULL ORDER BY p.stockQuantity ASC")
+    List<ProductVariant> findLowStockVariants(@Param("threshold") Integer threshold, org.springframework.data.domain.Pageable pageable);
 }

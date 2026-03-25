@@ -10,8 +10,6 @@ import { useRouter } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import { chatService, ChatMessage, ChatRoom, AttachmentType } from '@/services/chat.service';
 import { useAuth } from '@/contexts/AuthContext';
-
-// Modular Components
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessageItem } from '@/components/chat/chat-message-item';
 import { ChatInput } from '@/components/chat/chat-input';

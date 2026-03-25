@@ -20,4 +20,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 
     @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.status <> com.zola.enums.OrderStatus.CANCELLED AND o.createdAt >= :startDate")
     java.math.BigDecimal sumRevenueSince(@Param("startDate") LocalDateTime startDate);
+
+    @Query(value = "SELECT CAST(DATE(created_at) AS VARCHAR) as date, COUNT(*) as count FROM orders WHERE created_at >= :startDate AND created_at <= :endDate GROUP BY DATE(created_at) ORDER BY DATE(created_at)", nativeQuery = true)
+    List<Object[]> countDailyOrdersRaw(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

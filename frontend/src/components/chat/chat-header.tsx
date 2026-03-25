@@ -22,7 +22,6 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ room, onBack }) => {
                     />
                     <View style={styles.headerText}>
                         <Text style={styles.userName}>{room.otherUserName}</Text>
-                        <Text style={styles.userStatus}>Trực tuyến</Text>
                     </View>
                 </View>
             )}
@@ -53,9 +52,5 @@ const styles = StyleSheet.create({
     userName: {
         fontSize: 16,
         fontWeight: 'bold',
-    },
-    userStatus: {
-        fontSize: 12,
-        color: '#4CAF50',
     },
 });

@@ -14,5 +14,6 @@ public interface ChatService {
     ChatMessageResponse sendMessage(String roomId, String content, List<AttachmentRequest> attachments);
     ChatRoomResponse getOrCreateRoom(String shopId);
     ChatRoomResponse joinAdminRoom();
+    void markAsRead(String roomId, String userId);
     String uploadMedia(MultipartFile file) throws IOException;
 }

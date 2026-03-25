@@ -21,6 +21,7 @@ public class SocketHandler {
     SocketIOServer server;
     com.zola.services.authentication.JwtService jwtService;
     com.zola.services.redis.RedisService redisService;
+    com.zola.services.chat.ChatService chatService;
 
     @OnConnect
     public void clientConnected(SocketIOClient client) {
@@ -32,6 +33,9 @@ public class SocketHandler {
             
             // Lưu trạng thái online vào Redis
             redisService.set("user:session:" + userId, client.getSessionId().toString(), 1, java.util.concurrent.TimeUnit.DAYS);
+            
+            // Join user-specific room for multi-session notifications
+            client.joinRoom("user_" + userId);
             
             log.info("Client connected: {} (UserId: {})", client.getSessionId(), userId);
         } catch (Exception e) {
@@ -66,6 +70,15 @@ public class SocketHandler {
     public void onLeaveRoom(SocketIOClient client, String roomId) {
         client.leaveRoom(roomId);
         log.info("Client {} left room: {}", client.getSessionId(), roomId);
+    }
+
+    @OnEvent("mark_read")
+    public void onMarkRead(SocketIOClient client, String roomId) {
+        String userId = client.get("userId");
+        if (userId != null) {
+            chatService.markAsRead(roomId, userId);
+            log.info("User {} marked room {} as read via socket", userId, roomId);
+        }
     }
 
     @PostConstruct

@@ -3,6 +3,7 @@ import { View, StyleSheet, FlatList } from 'react-native';
 import { ActivityIndicator, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { chatService, ChatMessage, ChatRoom, AttachmentType } from '@/services/chat.service';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,6 +19,7 @@ export default function AdminChatDetailScreen() {
     const { user } = useAuth();
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
+    const isFocused = useIsFocused();
     const theme = useTheme();
     
     const [room, setRoom] = useState<ChatRoom | null>(null);
@@ -31,7 +33,7 @@ export default function AdminChatDetailScreen() {
     const [galleryImages, setGalleryImages] = useState<string[]>([]);
     const [galleryIndex, setGalleryIndex] = useState(0);
 
-    const { isConnected, messages: socketMessages, setMessages: setSocketMessages } = useChatSocket(id);
+    const { isConnected, messages: socketMessages, setMessages: setSocketMessages } = useChatSocket(id, isFocused);
     
     // Sync socket messages with component state
     useEffect(() => {

@@ -6,11 +6,16 @@ import { useAuth } from '../contexts/AuthContext';
 
 const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_SERVER_URL;
 
-export const useChatSocket = (roomId?: string) => {
+export const useChatSocket = (roomId?: string, isFocused: boolean = true) => {
     const { user } = useAuth();
     const [isConnected, setIsConnected] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const socketRef = useRef<Socket | null>(null);
+    const isFocusedRef = useRef(isFocused);
+
+    useEffect(() => {
+        isFocusedRef.current = isFocused;
+    }, [isFocused]);
 
     const connectSocket = useCallback(async () => {
         if (socketRef.current?.connected) return;
@@ -18,39 +23,46 @@ export const useChatSocket = (roomId?: string) => {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token) return;
 
-        socketRef.current = io(SOCKET_URL, {
+        const socket = io(SOCKET_URL, {
             query: { token },
             transports: ['websocket'],
             forceNew: true,
         });
 
-        socketRef.current.on('connect', () => {
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
             console.log('Socket connected');
             setIsConnected(true);
-            if (roomId) {
-                socketRef.current?.emit('join_room', roomId);
+            // Re-join current room on reconnect if roomId exists
+            const currentRoomId = roomIdRef.current;
+            if (currentRoomId) {
+                socket.emit('join_room', currentRoomId);
             }
         });
 
-        socketRef.current.on('disconnect', () => {
+        socket.on('disconnect', () => {
             console.log('Socket disconnected');
             setIsConnected(false);
         });
 
-        socketRef.current.on('receive_message', (message: ChatMessage) => {
+        socket.on('receive_message', (message: ChatMessage) => {
             console.log('Received message:', message);
-            if (roomId && message.roomId === roomId) {
+            if (roomIdRef.current && message.roomId === roomIdRef.current) {
                 setMessages((prev) => {
-                    // Avoid duplicates if message already exists (from optimistic update)
                     if (prev.find(m => m.id === message.id)) return prev;
                     return [...prev, message];
                 });
+                // Mark as read immediately ONLY if we are focused on the room
+                if (isFocusedRef.current) {
+                    socket.emit('mark_read', message.roomId);
+                }
             }
         });
 
-        socketRef.current.on('messages_read', (data: { roomId: string, viewerId: string }) => {
+        socket.on('messages_read', (data: { roomId: string, viewerId: string }) => {
             console.log('Messages read by:', data.viewerId);
-            if (roomId && data.roomId === roomId) {
+            if (roomIdRef.current && data.roomId === roomIdRef.current) {
                 setMessages((prev) =>
                     prev.map((m) =>
                         m.senderId !== data.viewerId ? { ...m, isRead: true } : m
@@ -59,29 +71,52 @@ export const useChatSocket = (roomId?: string) => {
             }
         });
 
-        socketRef.current.on('connect_error', (error) => {
+        socket.on('update_chat_list', (updatedRoom: any) => {
+            console.log('Room list update received:', updatedRoom.id);
+        });
+
+        socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
         });
 
-    }, [roomId]);
+    }, []);
 
+    const roomIdRef = useRef<string | undefined>(roomId);
+    
+    // Connection Effect
     useEffect(() => {
         connectSocket();
 
         return () => {
             if (socketRef.current) {
-                if (roomId) {
-                    socketRef.current.emit('leave_room', roomId);
-                }
                 socketRef.current.disconnect();
                 socketRef.current = null;
             }
         };
-    }, [connectSocket, roomId]);
+    }, [connectSocket]);
+
+    // Room Joining Effect
+    useEffect(() => {
+        const oldRoomId = roomIdRef.current;
+        roomIdRef.current = roomId;
+
+        if (socketRef.current?.connected) {
+            if (oldRoomId && oldRoomId !== roomId) {
+                socketRef.current.emit('leave_room', oldRoomId);
+            }
+            if (roomId) {
+                socketRef.current.emit('join_room', roomId);
+                if (isFocused) {
+                    socketRef.current.emit('mark_read', roomId);
+                }
+            }
+        }
+    }, [roomId, isFocused]);
 
     const joinRoom = (newRoomId: string) => {
         if (socketRef.current?.connected) {
             socketRef.current.emit('join_room', newRoomId);
+            socketRef.current.emit('mark_read', newRoomId);
         }
     };
 

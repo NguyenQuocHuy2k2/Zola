@@ -64,22 +64,9 @@ public class ChatServiceImpl implements ChatService {
         String currentUserId = SecurityUtils.getCurrentUserId();
         List<ChatMessage> messages = chatMessageRepository.findAllByRoomIdOrderByTimestampAsc(roomId);
         
-        // Mark as read
-        messages.stream()
-                .filter(m -> !m.getSenderId().equals(currentUserId) && !m.getIsRead())
-                .forEach(m -> {
-                    m.setIsRead(true);
-                    chatMessageRepository.save(m);
-                });
-
-        // Notify room about read status
-        if (!messages.isEmpty()) {
-            socketService.sendToRoom(roomId, "messages_read", java.util.Map.of(
-                    "roomId", roomId,
-                    "viewerId", currentUserId
-            ));
-        }
-
+        // Mark as read and notify
+        markAsRead(roomId, currentUserId);
+        
         return messages.stream()
                 .map(chatConverter::toChatMessageResponse)
                 .collect(Collectors.toList());
@@ -116,7 +103,17 @@ public class ChatServiceImpl implements ChatService {
         
         // Broadcast message to room
         socketService.sendToRoom(roomId, "receive_message", response);
-
+ 
+        // Notify recipient about room update (last message, unread count)
+        ChatRoom room = chatRoomRepository.findById(roomId).orElse(null);
+        if (room != null) {
+            String recipientId = senderId.equals(room.getUserId()) ? room.getShopId() : room.getUserId();
+            User otherUser = userRepository.findById(senderId).orElse(null); // Sender is the 'otherUser' for the recipient
+            long unreadCount = chatMessageRepository.countByRoomIdAndIsReadFalseAndSenderIdNot(room.getId(), recipientId);
+            ChatRoomResponse roomResponse = chatConverter.toChatRoomResponse(room, otherUser, savedMessage, unreadCount);
+            socketService.sendToUser(recipientId, "update_chat_list", roomResponse);
+        }
+ 
         return response;
     }
 
@@ -147,6 +144,43 @@ public class ChatServiceImpl implements ChatService {
         
         String adminId = admins.get(0).getId();
         return getOrCreateRoom(adminId);
+    }
+
+    @Override
+    @Transactional
+    public void markAsRead(String roomId, String currentUserId) {
+        List<ChatMessage> messages = chatMessageRepository.findAllByRoomIdOrderByTimestampAsc(roomId);
+        if (messages.isEmpty()) return;
+
+        boolean updated = false;
+        for (ChatMessage m : messages) {
+            if (!m.getSenderId().equals(currentUserId) && !m.getIsRead()) {
+                m.setIsRead(true);
+                chatMessageRepository.save(m);
+                updated = true;
+            }
+        }
+
+        if (updated) {
+            socketService.sendToRoom(roomId, "messages_read", java.util.Map.of(
+                    "roomId", roomId,
+                    "viewerId", currentUserId
+            ));
+        }
+
+        // Always send update_chat_list to ensure receiver's list is current
+        ChatRoom room = chatRoomRepository.findById(roomId).orElse(null);
+        if (room != null) {
+            boolean isAdmin = userRepository.findById(currentUserId)
+                .map(u -> u.getRole().getName().equals("ADMIN"))
+                .orElse(false);
+            
+            String otherUserId = isAdmin ? room.getUserId() : room.getShopId();
+            User otherUser = userRepository.findById(otherUserId).orElse(null);
+            ChatMessage lastMessage = messages.get(messages.size() - 1);
+            ChatRoomResponse roomResponse = chatConverter.toChatRoomResponse(room, otherUser, lastMessage, 0);
+            socketService.sendToUser(currentUserId, "update_chat_list", roomResponse);
+        }
     }
 
     @Override

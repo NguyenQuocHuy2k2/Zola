@@ -7,6 +7,7 @@ import {
 import { ActivityIndicator, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { chatService, ChatMessage, ChatRoom, AttachmentType } from '@/services/chat.service';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -21,6 +22,7 @@ import { useChatSocket } from '@/hooks/use-chat-socket';
 export default function UserChatScreen() {
     const { user } = useAuth();
     const router = useRouter();
+    const isFocused = useIsFocused();
     const theme = useTheme();
     
     const [room, setRoom] = useState<ChatRoom | null>(null);
@@ -34,7 +36,7 @@ export default function UserChatScreen() {
     const [galleryImages, setGalleryImages] = useState<string[]>([]);
     const [galleryIndex, setGalleryIndex] = useState(0);
 
-    const { messages: socketMessages } = useChatSocket(room?.id);
+    const { messages: socketMessages } = useChatSocket(room?.id, isFocused);
     
     // Sync socket messages with component state
     useEffect(() => {

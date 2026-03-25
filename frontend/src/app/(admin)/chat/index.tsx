@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { chatService, ChatRoom } from '@/services/chat.service';
 import { ChatRoomItem } from '@/components/chat/chat-room-item';
+import { useChatSocket } from '@/hooks/use-chat-socket';
 
 export default function AdminChatListScreen() {
     const router = useRouter();
@@ -14,6 +15,8 @@ export default function AdminChatListScreen() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+
+    const { socket } = useChatSocket(); // Added useChatSocket hook
 
     const fetchRooms = useCallback(async () => {
         try {
@@ -31,6 +34,32 @@ export default function AdminChatListScreen() {
             setRefreshing(false);
         }
     }, []);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleUpdate = (updatedRoom: ChatRoom) => {
+            setRooms(prev => {
+                const index = prev.findIndex(r => r.id === updatedRoom.id);
+                let newRooms;
+                if (index !== -1) {
+                    newRooms = [...prev];
+                    newRooms[index] = updatedRoom;
+                } else {
+                    newRooms = [updatedRoom, ...prev];
+                }
+                // Re-sort
+                return newRooms.sort((a, b) => 
+                    new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
+                );
+            });
+        };
+
+        socket.on('update_chat_list', handleUpdate);
+        return () => {
+            socket.off('update_chat_list', handleUpdate);
+        };
+    }, [socket]);
 
     useEffect(() => {
         fetchRooms();

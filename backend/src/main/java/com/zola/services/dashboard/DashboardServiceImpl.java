@@ -43,7 +43,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .monthlyRevenue(revenue)
                 .monthlyOrders(orderRepository.countOrdersSince(startOfMonth))
                 .totalProducts(productRepository.count())
-                .totalUsers(userRepository.count())
+                .totalUsers(userRepository.countByRole_Name("USER"))
                 .build();
     }
 

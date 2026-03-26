@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
-import OtpInput from '@/components/ui/otp-input';
+import OtpInput from '@/components/ui/otp-Input';
 
 interface ChangePasswordVerifyProps {
     otp: string;

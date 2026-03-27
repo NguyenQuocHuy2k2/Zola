@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, useTheme, ActivityIndicator } from 'react-native-paper';
+import { Text, useTheme, ActivityIndicator, IconButton } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { productService, Category, Product } from '@/services/product.service';
@@ -69,14 +69,24 @@ export default function HomeScreen() {
 
     const renderHeader = () => (
         <View>
-            {/* User Greeting */}
-            <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
-                <Text variant="headlineSmall" style={{ fontWeight: 'bold' }}>
-                    Chào, {user?.firstName || 'Bạn'}! 👋
-                </Text>
-                <Text variant="bodyMedium" style={{ opacity: 0.6 }}>
-                    Hôm nay bạn muốn mua gì nào?
-                </Text>
+            {/* Header with Greeting and Chat Icon */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 16 }}>
+                <View style={{ flex: 1, marginLeft: 8 }}>
+                    <Text variant="headlineSmall" style={{ fontWeight: 'bold' }}>
+                        Chào, {user?.firstName || 'Bạn'}! 👋
+                    </Text>
+                    <Text variant="bodyMedium" style={{ opacity: 0.6 }}>
+                        Hôm nay bạn muốn mua gì nào?
+                    </Text>
+                </View>
+                                <IconButton
+                    icon="robot-outline"
+                    mode="contained-tonal"
+                    containerColor={theme.colors.primaryContainer}
+                    iconColor={theme.colors.primary}
+                    size={28}
+                    onPress={() => router.push('/chatbox')}
+                />
             </View>
 
             <ProductSearchBar />

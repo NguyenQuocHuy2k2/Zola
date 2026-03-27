@@ -11,9 +11,11 @@ const COLUMN_WIDTH = width / 2 - 16;
 interface ProductCardProps {
   product: Product;
   onPress?: () => void;
+  width?: number;
+  style?: any;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, width: customWidth, style }) => {
   const router = useRouter();
 
   const handlePress = () => {
@@ -24,13 +26,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) =>
     }
   };
 
+  const cardWidth = customWidth || COLUMN_WIDTH;
+
   return (
     <TouchableOpacity
-      style={styles.productCard}
+      style={[styles.productCard, { width: cardWidth }, style]}
       onPress={handlePress}
       activeOpacity={0.8}
     >
-      <Image source={{ uri: getProductPrimaryImage(product) }} style={styles.productImage} resizeMode="cover" />
+      <Image 
+        source={{ uri: getProductPrimaryImage(product) }} 
+        style={[styles.productImage, { width: cardWidth, height: cardWidth }]} 
+        resizeMode="cover" 
+      />
 
       <View style={styles.productContent}>
         <Text numberOfLines={2} style={styles.productName}>{product.name}</Text>
@@ -45,7 +53,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) =>
 
 const styles = StyleSheet.create({
   productCard: {
-    width: COLUMN_WIDTH,
     backgroundColor: 'white',
     borderRadius: 20,
     marginBottom: 16,
@@ -57,8 +64,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   productImage: {
-    width: COLUMN_WIDTH,
-    height: COLUMN_WIDTH,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     backgroundColor: '#F5F5F5',

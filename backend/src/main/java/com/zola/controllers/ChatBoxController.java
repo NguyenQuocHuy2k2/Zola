@@ -1,5 +1,6 @@
 package com.zola.controllers;
 
+import com.zola.dto.response.ApiResponse;
 import com.zola.dto.response.chatbox.ChatBoxResponse;
 import com.zola.dto.response.chatbox.ChatBoxResponseType;
 import com.zola.services.chatbox.ChatBoxService;
@@ -15,13 +16,17 @@ public class ChatBoxController {
     private final ChatBoxService chatBoxService;
 
     @PostMapping("/chat")
-    public ChatBoxResponse chat(@RequestParam String message) {
+    public ApiResponse<ChatBoxResponse> chat(@RequestParam String message) {
         String userId = SecurityUtils.getCurrentUserId();
-        return chatBoxService.chat(message, userId);
+        return ApiResponse.<ChatBoxResponse>builder()
+                .result(chatBoxService.chat(message, userId))
+                .build();
     }
 
     @PostMapping("/determine-intent")
-    public ChatBoxResponseType determineIntent(@RequestParam String message) {
-        return chatBoxService.determineIntent(message);
+    public ApiResponse<ChatBoxResponseType> determineIntent(@RequestParam String message) {
+        return ApiResponse.<ChatBoxResponseType>builder()
+                .result(chatBoxService.determineIntent(message))
+                .build();
     }
 }

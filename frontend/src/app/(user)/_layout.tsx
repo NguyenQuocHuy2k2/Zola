@@ -11,10 +11,11 @@ export default function TabLayout() {
     const segments = useSegments();
     const { unreadCount } = useNotification();
 
-    // Hide the tab bar when inside nested profile screens or product detail/category/search screens
+    // Hide the tab bar when inside nested profile screens, product detail/category/search screens, or chatbox
     const hideTabBar =
         (segments[1] === 'profile' && segments.length > 3) ||
-        (segments[1] === 'product' && segments.length > 3);
+        (segments[1] === 'product' && segments.length > 3) ||
+        (segments[1] === 'chatbox');
     const tabBarStyle = hideTabBar ? { display: 'none' as const } : undefined;
 
     return (
@@ -26,6 +27,12 @@ export default function TabLayout() {
             }}>
             <Tabs.Screen
                 name="index"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="chatbox/index"
                 options={{
                     href: null,
                 }}

@@ -20,9 +20,13 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.VectorStore;
 
 @Configuration
 @RequiredArgsConstructor
@@ -59,7 +63,8 @@ public class ApplicationInitConfig {
             ColorRepository colorRepository,
             ProductRepository productRepository,
             ProductVariantRepository productVariantRepository,
-            ProductImageRepository productImageRepository) {
+            ProductImageRepository productImageRepository,
+            VectorStore vectorStore) {
         log.info("ApplicationInitConfig initialized - PostgreSQL detected");
 
         return args -> {
@@ -145,6 +150,8 @@ public class ApplicationInitConfig {
                 Map<String, Color> colorMap = colorRepository.findAll().stream()
                         .collect(Collectors.toMap(Color::getName, c -> c));
 
+                List<Document> documentsToVectorize = new ArrayList<>();
+
                 loadJson("seed/products.json").forEach(pd -> {
                     Product product = productRepository.save(Product.builder()
                             .name((String) pd.get("name"))
@@ -175,7 +182,24 @@ public class ApplicationInitConfig {
                                 .stockQuantity((Integer) v.get("stockQuantity"))
                                 .build()));
                     }
+
+                    documentsToVectorize.add(
+                            Document.builder()
+                                    .text(product.getName() + " " + product.getDescription())
+                                    .metadata(Map.of(
+                                            "productId", product.getId(),
+                                            "categoryId", String.valueOf(product.getCategory().getId()),
+                                            "name", product.getName()
+                                    ))
+                                    .build()
+                    );
                 });
+
+                if (!documentsToVectorize.isEmpty()) {
+                    log.info("Seeding {} products to Vector Store...", documentsToVectorize.size());
+                    vectorStore.add(documentsToVectorize);
+                    log.info("Vector Store seeding completed!");
+                }
             }
         };
     }

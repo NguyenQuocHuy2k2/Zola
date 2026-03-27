@@ -12,6 +12,9 @@ import com.zola.services.search.SearchHistoryService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,6 +25,7 @@ import com.zola.dto.request.product.SearchProductRequest;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +42,7 @@ public class ProductServiceImpl implements ProductService {
     ProductVariantRepository productVariantRepository;
     ProductImageRepository productImageRepository;
     ProductConverter productConverter;
+    VectorStore vectorStore;
 
     @Override
     @Transactional
@@ -76,6 +81,18 @@ public class ProductServiceImpl implements ProductService {
             savedProduct.setVariants(variants);
         }
 
+        // Add product info to vector store for AI search
+        vectorStore.add(List.of(
+                Document.builder()
+                        .text(product.getName() + " " + product.getDescription())
+                        .metadata(Map.of(
+                                "productId", savedProduct.getId(),
+                                "categoryId", String.valueOf(savedProduct.getCategory().getId()),
+                                "name", savedProduct.getName()
+                                ))
+                        .build()
+        ));
+
         return productConverter.toProductResponse(savedProduct);
     }
 
@@ -99,6 +116,18 @@ public class ProductServiceImpl implements ProductService {
             product.getImages().add(image);
             isFirst = false;
         }
+
+//        // Update product in vector store with new image URLs
+//        vectorStore.add(List.of(
+//                Document.builder()
+//                        .text(product.getName() + " " + product.getDescription())
+//                        .metadata(Map.of(
+//                                "productId", product.getId(),
+//                                "categoryId", String.valueOf(product.getCategory().getId()),
+//                                "name", product.getName()
+//                        ))
+//                        .build()
+//        ));
 
         return productConverter.toProductResponse(productRepository.save(product));
     }
@@ -127,11 +156,35 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponse> searchProducts(SearchProductRequest request) {
-        if (request.getKeyword() != null && !request.getKeyword().trim().isEmpty()) {
+        String keyword = request.getKeyword();
+        boolean useSemanticSearch = false;
+        List<String> productIds = null;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
             try {
-                searchHistoryService.saveKeyword(request.getKeyword());
+                searchHistoryService.saveKeyword(keyword);
             } catch (Exception ignored) {
-                // User may not be authenticated — history saving is optional
+                throw new RuntimeException("Failed to save search history");
+            }
+
+            // Perform Semantic Search
+            List<Document> semanticDocs = vectorStore.similaritySearch(
+                    SearchRequest.builder()
+                            .query(keyword)
+                            .topK(5)
+                            .build()
+            );
+
+            productIds = semanticDocs.stream()
+                    .map(doc -> (String) doc.getMetadata().get("productId"))
+                    .filter(id -> id != null)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            useSemanticSearch = true;
+
+            if (productIds.isEmpty()) {
+                return Page.empty();
             }
         }
 
@@ -145,7 +198,9 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return productRepository.searchProducts(
-                request.getKeyword(),
+                keyword,
+                useSemanticSearch,
+                productIds,
                 request.getCategoryId(),
                 request.getMinPrice(),
                 request.getMaxPrice(),

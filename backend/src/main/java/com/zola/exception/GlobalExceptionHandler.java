@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ErrorCode.UNCATEGORIZED_EXCEPTION;
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .code(errorCode.getCode())
-                .message(errorCode.getMessage())
+                .message(exception.getMessage())
                 .build();
 
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);

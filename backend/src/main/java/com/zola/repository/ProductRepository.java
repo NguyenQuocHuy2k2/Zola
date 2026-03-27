@@ -23,7 +23,8 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
   @Query("SELECT DISTINCT p FROM Product p " +
       "LEFT JOIN p.variants v " +
-      "WHERE (:keyword IS NULL OR :keyword = '' OR LOWER(p.name) LIKE CONCAT('%', LOWER(:keyword), '%') OR LOWER(p.description) LIKE CONCAT('%', LOWER(:keyword), '%')) " +
+      "WHERE (:useSemanticSearch = false AND (:keyword IS NULL OR :keyword = '' OR LOWER(p.name) LIKE CONCAT('%', LOWER(:keyword), '%') OR LOWER(p.description) LIKE CONCAT('%', LOWER(:keyword), '%')) " +
+      "   OR (:useSemanticSearch = true AND p.id IN :productIds)) " +
       "AND (:categoryId IS NULL OR p.category.id = :categoryId) " +
       "AND (:minPrice IS NULL OR p.basePrice >= :minPrice) " +
       "AND (:maxPrice IS NULL OR p.basePrice <= :maxPrice) " +
@@ -32,6 +33,8 @@ public interface ProductRepository extends JpaRepository<Product, String> {
       "AND (:status IS NULL OR p.status = :status)")
   Page<Product> searchProducts(
       @Param("keyword") String keyword,
+      @Param("useSemanticSearch") boolean useSemanticSearch,
+      @Param("productIds") List<String> productIds,
       @Param("categoryId") Integer categoryId,
       @Param("minPrice") BigDecimal minPrice,
       @Param("maxPrice") BigDecimal maxPrice,

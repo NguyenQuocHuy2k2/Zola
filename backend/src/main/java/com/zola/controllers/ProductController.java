@@ -57,6 +57,7 @@ public class ProductController {
 				.build();
 	}
 
+	// semantic search with multiple optional filters
 	@GetMapping("/search")
 	public ApiResponse<Page<ProductResponse>> searchProducts(
 			@RequestParam(required = false) String keyword,

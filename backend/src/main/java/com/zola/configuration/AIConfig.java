@@ -38,8 +38,7 @@ public class AIConfig {
         );
 
         return builder
-                .defaultSystem(systemPromptResource)
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .defaultSystem(systemPromptResource)    
                 .build();
     }
 

@@ -36,13 +36,11 @@ public class AITestMyLogicController {
 
     @PostMapping("/chat")
     public String chat(@RequestParam String message) {
-        SystemMessage systemMessage = new SystemMessage("""
-                You should response with a formal voice
-                """);
+
 
         UserMessage userMessage = new UserMessage(message);
 
-        Prompt prompt = new Prompt(systemMessage, userMessage);
+        Prompt prompt = new Prompt(userMessage);
 
         String conversationId = "0001";
 

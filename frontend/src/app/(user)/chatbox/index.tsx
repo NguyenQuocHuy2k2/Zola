@@ -4,30 +4,16 @@ import { TextInput, IconButton, Text, useTheme, ActivityIndicator, Divider } fro
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Markdown from 'react-native-markdown-display';
-import { ChatIntent, chatboxService } from '@/services/chatbox.service';
+import { ChatIntent, chatboxService, ChatMessage } from '@/services/chatbox.service';
 import { Product } from '@/services/product.service';
 import { ProductCard } from '@/components/products/product-card';
 import { Order } from '@/services/order.service';
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'ai';
-  intent?: ChatIntent;
-  data?: any;
-}
 
 export default function ChatBoxScreen() {
   const theme = useTheme();
   const router = useRouter();
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Chào bạn! Zola có thể giúp gì cho bạn hôm nay? Bạn có thể hỏi về sản phẩm, chính sách hoặc tra cứu đơn hàng nhé.',
-      sender: 'ai',
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(chatboxService.getHistory());
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -37,20 +23,21 @@ export default function ChatBoxScreen() {
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
 
-    const userMessage: Message = {
+    const userMessage: ChatMessage = {
       id: Date.now().toString(),
       text: input.trim(),
       sender: 'user',
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    chatboxService.addMessage(userMessage);
+    setMessages(chatboxService.getHistory());
     setInput('');
     setLoading(true);
 
     try {
       const response = await chatboxService.chat(userMessage.text);
       
-      const aiMessage: Message = {
+      const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         text: response.message,
         sender: 'ai',
@@ -58,15 +45,17 @@ export default function ChatBoxScreen() {
         data: response.data,
       };
 
-      setMessages((prev) => [...prev, aiMessage]);
+      chatboxService.addMessage(aiMessage);
+      setMessages(chatboxService.getHistory());
     } catch (error) {
       console.error('Chat error:', error);
-      const errorMessage: Message = {
+      const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         text: 'Rất tiếc, đã có lỗi xảy ra. Vui lòng thử lại sau.',
         sender: 'ai',
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      chatboxService.addMessage(errorMessage);
+      setMessages(chatboxService.getHistory());
     } finally {
       setLoading(false);
     }
@@ -120,7 +109,7 @@ export default function ChatBoxScreen() {
     );
   };
 
-  const renderMessage = ({ item }: { item: Message }) => {
+  const renderMessage = ({ item }: { item: ChatMessage }) => {
     const isAi = item.sender === 'ai';
     return (
       <View style={[styles.messageContainer, isAi ? styles.aiContainer : styles.userContainer]}>

@@ -50,6 +50,36 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  # AI CONFIG
+  ai:
+    model:
+      chat: ${SPRING_AI_MODEL_CHAT:google-genai}
+    google:
+      genai:
+        api-key: ${GOOGLE_GENAI_API_KEY}
+        chat:
+          options:
+            model: ${GOOGLE_GENAI_MODEL}
+        embedding:
+          api-key: ${GOOGLE_GENAI_API_KEY}
+          text:
+            options:
+              model: ${GOOGLE_GENAI_EMBEDDING_MODEL}
+              # Dùng cho việc lưu document vào vector store
+              task-type: RETRIEVAL_DOCUMENT
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        distance-type: COSINE_DISTANCE
+        dimensions: 3072
+        index-type: none
+#        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+
 # JWT CONFIG
 jwt:
   accessSignerKey: ${JWT_ACCESS_SIGNER_KEY}

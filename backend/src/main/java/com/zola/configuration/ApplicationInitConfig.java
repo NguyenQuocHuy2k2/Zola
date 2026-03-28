@@ -189,7 +189,8 @@ public class ApplicationInitConfig {
                                     .metadata(Map.of(
                                             "productId", product.getId(),
                                             "categoryId", String.valueOf(product.getCategory().getId()),
-                                            "name", product.getName()
+                                            "name", product.getName(),
+                                            "docType", "product"
                                     ))
                                     .build()
                     );

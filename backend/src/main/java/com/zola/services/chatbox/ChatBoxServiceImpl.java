@@ -78,6 +78,7 @@ public class ChatBoxServiceImpl implements ChatBoxService {
                 SearchRequest.builder()
                         .query(message)
                         .topK(5)
+                        .filterExpression("docType == 'product'")
                         .build()
         );
 

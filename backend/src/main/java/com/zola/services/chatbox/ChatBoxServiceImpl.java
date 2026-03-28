@@ -38,8 +38,7 @@ public class ChatBoxServiceImpl implements ChatBoxService {
                 return handleProductSearch(message, userId);
             }
             case POLICY_QA -> {
-                String aiAnswer = handlePolicyQA(message, userId);
-                return new ChatBoxResponse(ChatIntent.POLICY_QA, aiAnswer, null);
+                return handlePolicyQA(message, userId);
             }
             case ORDER_INQUIRY -> {
                 return handleOrderInquiry(message, userId);
@@ -202,7 +201,7 @@ public class ChatBoxServiceImpl implements ChatBoxService {
         return new ChatBoxResponse(ChatIntent.ORDER_INQUIRY, aiAnswer, myOrders);
     }
 
-    private String handlePolicyQA(String message, String conversationId) {
+    private ChatBoxResponse handlePolicyQA(String message, String conversationId) {
         List<Document> similarDocuments = vectorStore.similaritySearch(
                 SearchRequest.builder()
                         .query(message)
@@ -221,11 +220,13 @@ public class ChatBoxServiceImpl implements ChatBoxService {
                 Câu hỏi:  %s
                 """.formatted(context, message);
 
-        return chatClient.prompt()
+        String aiAnswer = chatClient.prompt()
                 .user(prompt)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .call()
                 .content();
+
+        return new ChatBoxResponse(ChatIntent.POLICY_QA, aiAnswer, null);
     }
 
     private ChatBoxResponse handleGeneralChat(String message, String conversationId) {

@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "chat_rooms")
+@Table(name = "chat_rooms", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"shop_id", "user_id"})
+})
 @EntityListeners(AuditingEntityListener.class)
 public class ChatRoom {
     @Id

@@ -15,6 +15,7 @@ import com.zola.repository.UserRepository;
 import com.zola.services.cloudinary.CloudinaryService;
 import com.zola.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -118,14 +119,26 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public ChatRoomResponse getOrCreateRoom(String shopId) {
         String userId = SecurityUtils.getCurrentUserId();
-        ChatRoom room = chatRoomRepository.findByShopIdAndUserId(shopId, userId)
-                .orElseGet(() -> chatRoomRepository.save(ChatRoom.builder()
-                        .shopId(shopId)
-                        .userId(userId)
-                        .createdAt(LocalDateTime.now())
-                        .build()));
+        ChatRoom room;
+        
+        try {
+            room = chatRoomRepository.findFirstByShopIdAndUserIdOrderByCreatedAtAsc(shopId, userId)
+                    .orElseGet(() -> {
+                        ChatRoom newRoom = ChatRoom.builder()
+                                .shopId(shopId)
+                                .userId(userId)
+                                .createdAt(LocalDateTime.now())
+                                .build();
+                        return chatRoomRepository.saveAndFlush(newRoom);
+                    });
+        } catch (DataIntegrityViolationException e) {
+            // Trường hợp bị Race Condition (luồng khác đã tạo xong record ngay trước đó)
+            room = chatRoomRepository.findFirstByShopIdAndUserIdOrderByCreatedAtAsc(shopId, userId)
+                    .orElseThrow(() -> e);
+        }
 
         User shopUser = userRepository.findById(shopId).orElse(null);
         ChatMessage lastMessage = chatMessageRepository.findFirstByRoomIdOrderByTimestampDesc(room.getId()).orElse(null);

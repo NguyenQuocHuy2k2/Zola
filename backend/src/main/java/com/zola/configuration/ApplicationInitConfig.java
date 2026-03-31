@@ -100,15 +100,15 @@ public class ApplicationInitConfig {
             }
 
             // Seed normal user
-            if (userRepository.findByUsername("vuthevy1209").isEmpty()) {
-                log.info("Seeding user vuthevy1209...");
+            if (userRepository.findByUsername("nguyenquochuy1106").isEmpty()) {
+                log.info("Seeding user nguyenquochuy1106...");
                 userRepository.save(User.builder()
-                        .username("vuthevy1209")
+                        .username("nguyenquochuy1106")
                         .password(passwordEncoder.encode("Password123@"))
-                        .email("vuthevy12092004@gmail.com")
+                        .email("huy.nq200206@gmail.com")
                         .phone("0354802825")
-                        .firstName("Vy")
-                        .lastName("Vu")
+                        .firstName("Huy")
+                        .lastName("Nguyen")
                         .role(roleRepository.findByRoleName(PredefinedRole.USER))
                         .isActive(true)
                         .build());

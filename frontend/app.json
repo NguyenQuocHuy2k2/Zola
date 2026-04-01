@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vuthevy.zola"
+      "bundleIdentifier": "com.nguyenquochuy.zola"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.vuthevy.zola"
+      "package": "com.nguyenquochuy.zola"
     },
     "web": {
       "output": "static",

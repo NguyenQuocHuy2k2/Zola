@@ -38,13 +38,23 @@ export default function UserChatScreen() {
     
     // Sync socket messages with component state
     useEffect(() => {
-        if (socketMessages.length > 0) {
-            const lastSocketMsg = socketMessages[socketMessages.length - 1];
-            setMessages(prev => {
-                if (prev.find(m => m.id === lastSocketMsg.id)) return prev;
-                return [lastSocketMsg, ...prev];
-            });
-        }
+        setMessages(prev => {
+            let updated = [...prev];
+            let changed = false;
+            for (const sm of socketMessages) {
+                const idx = updated.findIndex(m => m.id === sm.id);
+                if (idx !== -1) {
+                    if (updated[idx].isRead !== sm.isRead) {
+                        updated[idx] = { ...updated[idx], isRead: sm.isRead };
+                        changed = true;
+                    }
+                } else {
+                    updated.unshift(sm);
+                    changed = true;
+                }
+            }
+            return changed ? updated : prev;
+        });
     }, [socketMessages]);
 
     const initChat = useCallback(async () => {
@@ -64,10 +74,6 @@ export default function UserChatScreen() {
         initChat();
     }, [initChat]);
 
-    useEffect(() => {
-        initChat();
-    }, [initChat]);
-
     const handleSend = async (text: string, media: { uri: string, type: AttachmentType }[]) => {
         if (!room) return;
 
@@ -81,7 +87,10 @@ export default function UserChatScreen() {
             }
 
             const newMessage = await chatService.sendMessage(room.id, text.trim(), attachments);
-            setMessages(prev => [newMessage, ...prev]);
+            setMessages(prev => {
+                if (prev.find(m => m.id === newMessage.id)) return prev;
+                return [newMessage, ...prev];
+            });
         } catch (error) {
             console.error('Failed to send message:', error);
             throw error; // Let ChatInput handle the error (e.g. restore text)

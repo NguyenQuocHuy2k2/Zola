@@ -37,13 +37,23 @@ export default function AdminChatDetailScreen() {
     
     // Sync socket messages with component state
     useEffect(() => {
-        if (socketMessages.length > 0) {
-            const lastSocketMsg = socketMessages[socketMessages.length - 1];
-            setMessages(prev => {
-                if (prev.find(m => m.id === lastSocketMsg.id)) return prev;
-                return [lastSocketMsg, ...prev];
-            });
-        }
+        setMessages(prev => {
+            let updated = [...prev];
+            let changed = false;
+            for (const sm of socketMessages) {
+                const idx = updated.findIndex(m => m.id === sm.id);
+                if (idx !== -1) {
+                    if (updated[idx].isRead !== sm.isRead) {
+                        updated[idx] = { ...updated[idx], isRead: sm.isRead };
+                        changed = true;
+                    }
+                } else {
+                    updated.unshift(sm);
+                    changed = true;
+                }
+            }
+            return changed ? updated : prev;
+        });
     }, [socketMessages]);
 
     const initRoom = useCallback(async () => {
@@ -70,10 +80,6 @@ export default function AdminChatDetailScreen() {
         initRoom();
     }, [initRoom]);
 
-    useEffect(() => {
-        initRoom();
-    }, [initRoom]);
-
     const handleSend = async (text: string, media: { uri: string, type: AttachmentType }[]) => {
         if (!id) return;
 
@@ -87,7 +93,10 @@ export default function AdminChatDetailScreen() {
             }
 
             const newMessage = await chatService.sendMessage(id, text.trim(), attachments);
-            setMessages(prev => [newMessage, ...prev]);
+            setMessages(prev => {
+                if (prev.find(m => m.id === newMessage.id)) return prev;
+                return [newMessage, ...prev];
+            });
         } catch (error) {
             console.error('Admin failed to send message:', error);
             throw error;

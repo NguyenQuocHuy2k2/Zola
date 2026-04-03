@@ -46,9 +46,9 @@ function AppContent() {
 
     const isAdmin = user?.role === 'ADMIN';
     const isNavigationCorrect =
-        (!user && segments[0] === '(auth)') ||
+        (segments[0] === '(auth)') ||
         (!!isAdmin && segments[0] === '(admin)') ||
-        (!isAdmin && !!user && segments[0] === '(user)') ||
+        (!isAdmin && segments[0] === '(user)') ||
         (segments.length as number) === 0;
 
     const showLoader = isLoading || (!isNavigationCorrect && (segments.length as number) > 0);

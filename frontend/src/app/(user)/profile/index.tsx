@@ -41,9 +41,10 @@ export default function ProfileScreen() {
         setLogoutModalVisible(true);
     };
 
-    const confirmLogout = () => {
+    const confirmLogout = async () => {
         setLogoutModalVisible(false);
-        signOut();
+        await signOut();
+        router.replace('/(user)/product');
     };
 
     if (!user) {

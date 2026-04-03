@@ -3,6 +3,7 @@ import { StyleSheet, FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme, ActivityIndicator } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
 import { cartService, CartItem } from '@/services/cart.service';
 
 import CartHeader from '@/components/cart/cart-header';
@@ -10,10 +11,13 @@ import EmptyCart from '@/components/cart/empty-cart';
 import CartItemCard from '@/components/cart/cart-item-card';
 import CartBottomSummary from '@/components/cart/cart-bottom-summary';
 import ConfirmModal from '@/components/ui/confirm-modal';
+import { GuestPlaceholder } from '@/components/auth/guest-placeholder';
+import { IconButton, Text as PaperText } from 'react-native-paper';
 
 export default function CartScreen() {
     const theme = useTheme();
     const router = useRouter();
+    const { user } = useAuth();
 
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -23,6 +27,7 @@ export default function CartScreen() {
     // Modal state
     const [confirmModalVisible, setConfirmModalVisible] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<string | null>(null);
+    const [showGuestPrompt, setShowGuestPrompt] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -95,6 +100,23 @@ export default function CartScreen() {
     const selectedCartItems = cartItems.filter(item => selectedItems[item.id]);
     const totalPrice = selectedCartItems.reduce((sum, item) => sum + (item.product.basePrice * item.quantity), 0);
 
+    if (showGuestPrompt) {
+        return (
+            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                <View style={styles.guestPromptHeader}>
+                    <IconButton icon="chevron-left" size={28} onPress={() => setShowGuestPrompt(false)} />
+                    <PaperText variant="titleMedium" style={{ fontWeight: 'bold' }}>Thanh toán</PaperText>
+                    <View style={{ width: 44 }} />
+                </View>
+                <GuestPlaceholder
+                    title="Yêu cầu đăng nhập"
+                    description="Vui lòng đăng nhập tài khoản Zola để tiến hành mua hàng và thanh toán."
+                    icon="cart-arrow-right"
+                />
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <CartHeader />
@@ -128,6 +150,10 @@ export default function CartScreen() {
                         totalPrice={totalPrice}
                         selectedCount={selectedCartItems.length}
                         onCheckout={() => {
+                            if (!user) {
+                                setShowGuestPrompt(true);
+                                return;
+                            }
                             const ids = selectedCartItems.map(i => i.id).join(',');
                             router.push(`/cart/checkout?ids=${ids}`);
                         }}
@@ -158,6 +184,17 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FAFAFA',
+    },
+    guestPromptHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 8,
+        paddingTop: 8,
+        paddingBottom: 8,
+        backgroundColor: '#FFFFFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
     },
     center: {
         flex: 1,

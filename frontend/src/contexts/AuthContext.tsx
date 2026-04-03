@@ -36,18 +36,15 @@ function useProtectedRoute(user: UserProfile | null, isLoading: boolean) {
         const inUserGroup = segments[0] === '(user)';
         const isAdmin = user?.role === 'ADMIN';
 
-        if (!user && !inAuthGroup) {
-            // Chưa đăng nhập → về login
-            router.replace('/(auth)/login');
-        } else if (user && inAuthGroup) {
+        if (user && inAuthGroup) {
             // Vừa đăng nhập → route theo role
             router.replace(isAdmin ? '/(admin)' : '/(user)');
-        } else if (user && isAdmin && !inAdminGroup) {
+        } else if (inAdminGroup && (!user || !isAdmin)) {
+            // Không phải admin mà vào admin -> về trang chủ (user)
+            router.replace('/(user)');
+        } else if (user && isAdmin && inUserGroup) {
             // Admin cố truy cập màn hình user → về admin
             router.replace('/(admin)');
-        } else if (user && !isAdmin && inAdminGroup) {
-            // User cố truy cập màn hình admin → về user
-            router.replace('/(user)');
         }
     }, [user, segments, isLoading]);
 }

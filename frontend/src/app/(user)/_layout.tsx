@@ -4,6 +4,8 @@ import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DeviceEventEmitter } from 'react-native';
 import { cartService } from '@/services/cart.service';
+import { orderService } from '@/services/order.service';
+import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useNotification } from '@/contexts/NotificationContext';
 
@@ -30,6 +32,29 @@ export default function TabLayout() {
         const subscription = DeviceEventEmitter.addListener('cart_updated', loadCartCount);
         return () => subscription.remove();
     }, []);
+
+    const { user } = useAuth();
+    const [orderCount, setOrderCount] = React.useState(0);
+
+    const loadOrderCount = async () => {
+        if (!user) {
+            setOrderCount(0);
+            return;
+        }
+        try {
+            const orders = await orderService.getOrderHistory();
+            const activeOrders = orders.filter(o => o.status !== 'CANCELLED' && o.status !== 'RECEIVED');
+            setOrderCount(activeOrders.length);
+        } catch (e) {
+            setOrderCount(0);
+        }
+    };
+
+    React.useEffect(() => {
+        loadOrderCount();
+        const orderSubscription = DeviceEventEmitter.addListener('order_updated', loadOrderCount);
+        return () => orderSubscription.remove();
+    }, [user]);
 
     // Hide the tab bar when inside nested profile screens, product detail/category/search screens, or chatbox
     const hideTabBar =
@@ -78,6 +103,7 @@ export default function TabLayout() {
                 options={{
                     title: 'Đơn hàng',
                     tabBarIcon: ({ color }) => <MaterialCommunityIcons name="clipboard-text-outline" size={24} color={color} />,
+                    tabBarBadge: orderCount > 0 ? orderCount : undefined,
                 }}
             />
             <Tabs.Screen

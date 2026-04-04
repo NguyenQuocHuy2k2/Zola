@@ -1,5 +1,6 @@
 import api from './api';
 import { CartItem } from './cart.service';
+import { DeviceEventEmitter } from 'react-native';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'RECEIVED' | 'CANCELLED';
 export type PaymentMethod = 'COD' | 'VNPAY';
@@ -61,6 +62,7 @@ export const orderService = {
     }): Promise<Order> {
         try {
             const response = await api.post('/orders/checkout', params);
+            DeviceEventEmitter.emit('order_updated');
             return response.data.result;
         } catch (error) {
             console.error('Checkout failed', error);
@@ -81,6 +83,7 @@ export const orderService = {
     async cancelOrder(id: string, reason?: CancellationReason): Promise<void> {
         try {
             await api.post(`/orders/${id}/cancel`, null, { params: { reason } });
+            DeviceEventEmitter.emit('order_updated');
         } catch (error) {
             console.error('Cancel order failed', error);
             throw error;
@@ -100,6 +103,7 @@ export const orderService = {
     async updateOrderStatus(id: string, status: OrderStatus, reason?: CancellationReason): Promise<Order | null> {
         try {
             const response = await api.patch(`/orders/${id}/status`, null, { params: { status, reason } });
+            DeviceEventEmitter.emit('order_updated');
             return response.data.result;
         } catch (error) {
             console.error('Update order status failed', error);

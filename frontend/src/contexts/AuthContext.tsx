@@ -6,6 +6,7 @@ import { useRealm, useQuery } from '../storage/realm';
 import { UserProfile as RealmUserProfile } from '../storage/realm';
 import { UserProfile } from '@/services/profile.service';
 import { cartService } from '@/services/cart.service';
+import { DeviceEventEmitter } from 'react-native';
 
 interface AuthContextType {
     user: UserProfile | null;
@@ -131,6 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Merge any guest cart items to the newly logged in user account
             await cartService.mergeGuestCart();
 
+            // Emit to force reload cart quantities in the UI
+            DeviceEventEmitter.emit('cart_updated');
+
         } catch (error) {
             console.error('Failed to save session:', error);
             throw error;
@@ -146,6 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const allUsers = realm.objects('UserProfile');
                 realm.delete(allUsers);
             });
+
+            // Emit to reset the cart badge back to 0 or guest cart
+            DeviceEventEmitter.emit('cart_updated');
         } catch (error) {
             console.error('Failed to clear session:', error);
         }

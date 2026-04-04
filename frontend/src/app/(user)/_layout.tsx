@@ -2,6 +2,8 @@ import { Tabs, useSegments } from 'expo-router';
 import React from 'react';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { DeviceEventEmitter } from 'react-native';
+import { cartService } from '@/services/cart.service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useNotification } from '@/contexts/NotificationContext';
 
@@ -10,6 +12,24 @@ export default function TabLayout() {
     const theme = useTheme();
     const segments = useSegments();
     const { unreadCount } = useNotification();
+
+    const [cartCount, setCartCount] = React.useState(0);
+
+    const loadCartCount = async () => {
+        try {
+            const items = await cartService.getCart();
+            // Count total distinct items (length of array)
+            setCartCount(items.length);
+        } catch (e) {
+            setCartCount(0);
+        }
+    };
+
+    React.useEffect(() => {
+        loadCartCount();
+        const subscription = DeviceEventEmitter.addListener('cart_updated', loadCartCount);
+        return () => subscription.remove();
+    }, []);
 
     // Hide the tab bar when inside nested profile screens, product detail/category/search screens, or chatbox
     const hideTabBar =
@@ -49,6 +69,7 @@ export default function TabLayout() {
                 options={{
                     title: 'Giỏ hàng',
                     tabBarIcon: ({ color }) => <MaterialCommunityIcons name="cart" size={24} color={color} />,
+                    tabBarBadge: cartCount > 0 ? cartCount : undefined,
                     popToTopOnBlur: true,
                 }}
             />

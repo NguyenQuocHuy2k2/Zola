@@ -2,6 +2,7 @@ import api from './api';
 import { Product, ProductVariant, productService } from './product.service';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DeviceEventEmitter } from 'react-native';
 
 export interface CartItem {
     id: string;
@@ -56,11 +57,13 @@ export const cartService = {
                 }
             }
             await AsyncStorage.setItem(GUEST_CART_KEY, JSON.stringify(localCart));
+            DeviceEventEmitter.emit('cart_updated');
             return;
         }
 
         try {
             await api.post('/cart', { productId, variantId, quantity });
+            DeviceEventEmitter.emit('cart_updated');
         } catch (e) {
             console.error('Add to cart failed', e);
             throw e;
@@ -77,12 +80,14 @@ export const cartService = {
             if (index !== -1) {
                 localCart[index].quantity = quantity;
                 await AsyncStorage.setItem(GUEST_CART_KEY, JSON.stringify(localCart));
+                DeviceEventEmitter.emit('cart_updated');
             }
             return;
         }
 
         try {
             await api.put(`/cart/${id}`, null, { params: { quantity } });
+            DeviceEventEmitter.emit('cart_updated');
         } catch (e) {
             console.error('Update quantity failed', e);
             throw e;
@@ -97,11 +102,13 @@ export const cartService = {
             let localCart: CartItem[] = JSON.parse(localStr);
             localCart = localCart.filter(i => i.id !== id);
             await AsyncStorage.setItem(GUEST_CART_KEY, JSON.stringify(localCart));
+            DeviceEventEmitter.emit('cart_updated');
             return;
         }
 
         try {
             await api.delete(`/cart/${id}`);
+            DeviceEventEmitter.emit('cart_updated');
         } catch (e) {
             console.error('Remove from cart failed', e);
             throw e;
@@ -112,11 +119,13 @@ export const cartService = {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token) {
             await AsyncStorage.removeItem(GUEST_CART_KEY);
+            DeviceEventEmitter.emit('cart_updated');
             return;
         }
 
         try {
             await api.delete('/cart/clear');
+            DeviceEventEmitter.emit('cart_updated');
         } catch (e) {
             console.error('Clear cart failed', e);
             throw e;
@@ -145,6 +154,7 @@ export const cartService = {
 
             // Wipe local cart after merge attempt
             await AsyncStorage.removeItem(GUEST_CART_KEY);
+            DeviceEventEmitter.emit('cart_updated');
         } catch (e) {
             console.error('Merge guest cart failed', e);
         }

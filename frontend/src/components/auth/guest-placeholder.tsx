@@ -8,12 +8,14 @@ interface GuestPlaceholderProps {
     title?: string;
     description?: string;
     icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+    onPressLogin?: () => void;
 }
 
 export const GuestPlaceholder: React.FC<GuestPlaceholderProps> = ({
     title = 'Yêu cầu đăng nhập',
     description = 'Vui lòng đăng nhập để tiếp tục sử dụng tính năng này.',
     icon = 'account-lock-outline',
+    onPressLogin,
 }) => {
     const theme = useTheme();
     const router = useRouter();
@@ -29,7 +31,13 @@ export const GuestPlaceholder: React.FC<GuestPlaceholderProps> = ({
             </Text>
             <Button
                 mode="contained"
-                onPress={() => router.push('/(auth)/login')}
+                onPress={() => {
+                    if (onPressLogin) {
+                        onPressLogin();
+                    } else {
+                        router.push('/(auth)/login');
+                    }
+                }}
                 style={styles.button}
                 contentStyle={styles.buttonContent}
             >

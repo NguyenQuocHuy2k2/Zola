@@ -1,6 +1,7 @@
 import api from './api';
 import { Product, ProductVariant, productService } from './product.service';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface CartItem {
     id: string;
@@ -16,7 +17,7 @@ export const cartService = {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token) {
             try {
-                const localStr = await SecureStore.getItemAsync(GUEST_CART_KEY);
+                const localStr = await AsyncStorage.getItem(GUEST_CART_KEY);
                 return localStr ? JSON.parse(localStr) : [];
             } catch { return []; }
         }
@@ -34,7 +35,7 @@ export const cartService = {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token) {
             // Logic cho Guest Cart
-            const localStr = await SecureStore.getItemAsync(GUEST_CART_KEY);
+            const localStr = await AsyncStorage.getItem(GUEST_CART_KEY);
             let localCart: CartItem[] = localStr ? JSON.parse(localStr) : [];
             
             // Check var trong local
@@ -54,7 +55,7 @@ export const cartService = {
                     });
                 }
             }
-            await SecureStore.setItemAsync(GUEST_CART_KEY, JSON.stringify(localCart));
+            await AsyncStorage.setItem(GUEST_CART_KEY, JSON.stringify(localCart));
             return;
         }
 
@@ -69,13 +70,13 @@ export const cartService = {
     async updateQuantity(id: string, quantity: number): Promise<void> {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token) {
-            const localStr = await SecureStore.getItemAsync(GUEST_CART_KEY);
+            const localStr = await AsyncStorage.getItem(GUEST_CART_KEY);
             if (!localStr) return;
             let localCart: CartItem[] = JSON.parse(localStr);
             const index = localCart.findIndex(i => i.id === id);
             if (index !== -1) {
                 localCart[index].quantity = quantity;
-                await SecureStore.setItemAsync(GUEST_CART_KEY, JSON.stringify(localCart));
+                await AsyncStorage.setItem(GUEST_CART_KEY, JSON.stringify(localCart));
             }
             return;
         }
@@ -91,11 +92,11 @@ export const cartService = {
     async removeFromCart(id: string): Promise<void> {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token) {
-            const localStr = await SecureStore.getItemAsync(GUEST_CART_KEY);
+            const localStr = await AsyncStorage.getItem(GUEST_CART_KEY);
             if (!localStr) return;
             let localCart: CartItem[] = JSON.parse(localStr);
             localCart = localCart.filter(i => i.id !== id);
-            await SecureStore.setItemAsync(GUEST_CART_KEY, JSON.stringify(localCart));
+            await AsyncStorage.setItem(GUEST_CART_KEY, JSON.stringify(localCart));
             return;
         }
 
@@ -110,7 +111,7 @@ export const cartService = {
     async clearCart(): Promise<void> {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token) {
-            await SecureStore.deleteItemAsync(GUEST_CART_KEY);
+            await AsyncStorage.removeItem(GUEST_CART_KEY);
             return;
         }
 
@@ -119,6 +120,33 @@ export const cartService = {
         } catch (e) {
             console.error('Clear cart failed', e);
             throw e;
+        }
+    },
+
+    async mergeGuestCart(): Promise<void> {
+        try {
+            const localStr = await AsyncStorage.getItem(GUEST_CART_KEY);
+            if (!localStr) return;
+            const localCart: CartItem[] = JSON.parse(localStr);
+            if (localCart.length === 0) return;
+
+            for (const item of localCart) {
+                // Ignore errors per item so one failing doesn't break others
+                try {
+                    await api.post('/cart', { 
+                        productId: item.product.id, 
+                        variantId: item.variant.id, 
+                        quantity: item.quantity 
+                    });
+                } catch (err) {
+                    console.error('Failed to merge cart item', err);
+                }
+            }
+
+            // Wipe local cart after merge attempt
+            await AsyncStorage.removeItem(GUEST_CART_KEY);
+        } catch (e) {
+            console.error('Merge guest cart failed', e);
         }
     }
 };

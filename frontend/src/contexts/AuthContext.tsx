@@ -5,6 +5,7 @@ import { useRouter, useSegments } from 'expo-router';
 import { useRealm, useQuery } from '../storage/realm';
 import { UserProfile as RealmUserProfile } from '../storage/realm';
 import { UserProfile } from '@/services/profile.service';
+import { cartService } from '@/services/cart.service';
 
 interface AuthContextType {
     user: UserProfile | null;
@@ -37,8 +38,15 @@ function useProtectedRoute(user: UserProfile | null, isLoading: boolean) {
         const isAdmin = user?.role === 'ADMIN';
 
         if (user && inAuthGroup) {
-            // Vừa đăng nhập → route theo role
-            router.replace(isAdmin ? '/(admin)' : '/(user)');
+            // Check var returnTo locally since useEffect doesn't support async top-level well without then
+            SecureStore.getItemAsync('returnTo').then(returnTo => {
+                if (returnTo) {
+                    SecureStore.deleteItemAsync('returnTo');
+                    router.replace(returnTo as any);
+                } else {
+                    router.replace(isAdmin ? '/(admin)' : '/(user)');
+                }
+            });
         } else if (inAdminGroup && (!user || !isAdmin)) {
             // Không phải admin mà vào admin -> về trang chủ (user)
             router.replace('/(user)');
@@ -120,6 +128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 });
             });
 
+            // Merge any guest cart items to the newly logged in user account
+            await cartService.mergeGuestCart();
 
         } catch (error) {
             console.error('Failed to save session:', error);

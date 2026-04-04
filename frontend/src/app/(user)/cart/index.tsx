@@ -5,6 +5,8 @@ import { useTheme, ActivityIndicator } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { cartService, CartItem } from '@/services/cart.service';
+import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import CartHeader from '@/components/cart/cart-header';
 import EmptyCart from '@/components/cart/empty-cart';
@@ -41,11 +43,23 @@ export default function CartScreen() {
             const items = await cartService.getCart();
             setCartItems(items || []);
 
+            const autoSelectStr = await AsyncStorage.getItem('autoSelectVariants');
+            let autoSelectVars: string[] = [];
+            if (autoSelectStr) {
+                autoSelectVars = JSON.parse(autoSelectStr);
+                await AsyncStorage.removeItem('autoSelectVariants');
+            }
+
             setSelectedItems(prev => {
                 const newSelection: Record<string, boolean> = { ...prev };
                 (items || []).forEach(item => {
                     if (newSelection[item.id] === undefined) {
-                        newSelection[item.id] = false;
+                        const matcher = `${item.product.id}_${item.variant.id}`;
+                        if (autoSelectVars.includes(matcher)) {
+                            newSelection[item.id] = true;
+                        } else {
+                            newSelection[item.id] = false;
+                        }
                     }
                 });
                 return newSelection;
@@ -112,6 +126,12 @@ export default function CartScreen() {
                     title="Yêu cầu đăng nhập"
                     description="Vui lòng đăng nhập tài khoản Zola để tiến hành mua hàng và thanh toán."
                     icon="cart-arrow-right"
+                    onPressLogin={async () => {
+                        const selectedVars = selectedCartItems.map(i => `${i.product.id}_${i.variant.id}`);
+                        await AsyncStorage.setItem('autoSelectVariants', JSON.stringify(selectedVars));
+                        await SecureStore.setItemAsync('returnTo', '/(user)/cart');
+                        router.push('/(auth)/login');
+                    }}
                 />
             </SafeAreaView>
         );

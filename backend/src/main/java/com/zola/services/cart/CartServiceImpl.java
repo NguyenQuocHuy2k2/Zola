@@ -44,8 +44,16 @@ public class CartServiceImpl implements CartService {
 
         CartItem cartItem = cartItemRepository.findByUserAndProductVariant(user, variant)
                 .map(existing -> {
-                    existing.setQuantity(existing.getQuantity() + request.getQuantity());
-                    return cartItemRepository.save(existing);
+                    // Xóa bản ghi cũ để ép buộc tạo mới, giúp reset lại thời gian createdAt nhằm đùn món hàng lên đầu
+                    cartItemRepository.delete(existing);
+                    cartItemRepository.flush();
+
+                    CartItem newItem = CartItem.builder()
+                            .user(user)
+                            .productVariant(variant)
+                            .quantity(existing.getQuantity() + request.getQuantity())
+                            .build();
+                    return cartItemRepository.save(newItem);
                 })
                 .orElseGet(() -> {
                     CartItem newItem = CartItem.builder()

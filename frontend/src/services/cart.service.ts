@@ -40,9 +40,13 @@ export const cartService = {
             let localCart: CartItem[] = localStr ? JSON.parse(localStr) : [];
 
             // Check var trong local
-            const existing = localCart.find(i => i.product.id === productId && i.variant.id === variantId);
-            if (existing) {
+            const existingIndex = localCart.findIndex(i => i.product.id === productId && i.variant.id === variantId);
+            if (existingIndex !== -1) {
+                // Rút món hàng ra khỏi dòng thời gian cũ
+                const [existing] = localCart.splice(existingIndex, 1);
                 existing.quantity += quantity;
+                // Đẩy chèn nó lại lên đầu vị trí số 0
+                localCart.unshift(existing);
             } else {
                 // Fetch product details
                 const product = await productService.getProductById(productId);

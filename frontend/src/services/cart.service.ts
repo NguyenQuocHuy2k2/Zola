@@ -48,7 +48,7 @@ export const cartService = {
                 const product = await productService.getProductById(productId);
                 const variant = product.variants.find(v => v.id === variantId);
                 if (variant) {
-                    localCart.push({
+                    localCart.unshift({
                         id: `guest_${Date.now()}_${productId}_${variantId}`,
                         product,
                         variant,

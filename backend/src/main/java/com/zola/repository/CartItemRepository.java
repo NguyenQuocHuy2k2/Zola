@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, String> {
-    List<CartItem> findByUser(User user);
+    List<CartItem> findByUserOrderByCreatedAtDesc(User user);
 
     @Query("SELECT c FROM CartItem c WHERE c.user = :user AND c.productVariant = :variant")
     Optional<CartItem> findByUserAndProductVariant(@Param("user") User user, @Param("variant") ProductVariant variant);

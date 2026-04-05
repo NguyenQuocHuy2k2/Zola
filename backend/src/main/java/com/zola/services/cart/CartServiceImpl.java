@@ -65,7 +65,7 @@ public class CartServiceImpl implements CartService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return cartItemRepository.findByUser(user).stream()
+        return cartItemRepository.findByUserOrderByCreatedAtDesc(user).stream()
                 .map(cartConverter::toCartItemResponse)
                 .collect(Collectors.toList());
     }

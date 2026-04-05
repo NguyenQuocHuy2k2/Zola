@@ -38,7 +38,7 @@ export const cartService = {
             // Logic cho Guest Cart
             const localStr = await AsyncStorage.getItem(GUEST_CART_KEY);
             let localCart: CartItem[] = localStr ? JSON.parse(localStr) : [];
-            
+
             // Check var trong local
             const existing = localCart.find(i => i.product.id === productId && i.variant.id === variantId);
             if (existing) {
@@ -139,13 +139,14 @@ export const cartService = {
             const localCart: CartItem[] = JSON.parse(localStr);
             if (localCart.length === 0) return;
 
-            for (const item of localCart) {
+            for (let i = localCart.length - 1; i >= 0; i--) {
+                const item = localCart[i];
                 // Ignore errors per item so one failing doesn't break others
                 try {
-                    await api.post('/cart', { 
-                        productId: item.product.id, 
-                        variantId: item.variant.id, 
-                        quantity: item.quantity 
+                    await api.post('/cart', {
+                        productId: item.product.id,
+                        variantId: item.variant.id,
+                        quantity: item.quantity
                     });
                 } catch (err) {
                     console.error('Failed to merge cart item', err);

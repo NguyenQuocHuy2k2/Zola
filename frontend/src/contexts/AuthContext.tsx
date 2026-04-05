@@ -130,11 +130,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 });
             });
 
-            // Merge any guest cart items to the newly logged in user account
-            await cartService.mergeGuestCart();
-
-            // Emit to force reload cart quantities in the UI
-            DeviceEventEmitter.emit('cart_updated');
+            if (authData.user.role === 'USER') {
+                await cartService.mergeGuestCart();
+                DeviceEventEmitter.emit('cart_updated');
+            } else {
+                await AsyncStorage.removeItem('guest_cart');
+                DeviceEventEmitter.emit('cart_updated');
+            }
 
         } catch (error) {
             console.error('Failed to save session:', error);
@@ -154,7 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Emit to reset the cart badge back to 0 or guest cart
             DeviceEventEmitter.emit('cart_updated');
-            
+
             // Xóa lịch sử tìm kiếm local của guest để đảm bảo sạch sẽ sau mỗi phiên
             await AsyncStorage.removeItem('guest_search_history');
         } catch (error) {

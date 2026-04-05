@@ -164,7 +164,7 @@ public class ProductServiceImpl implements ProductService {
             try {
                 searchHistoryService.saveKeyword(keyword);
             } catch (Exception ignored) {
-                throw new RuntimeException("Failed to save search history");
+                // Guest users will fail to save history, ignore gracefully so search continues
             }
 
             // Perform Semantic Search

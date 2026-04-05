@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthResponse } from '../services/auth.service';
 import { useRouter, useSegments } from 'expo-router';
 import { useRealm, useQuery } from '../storage/realm';
@@ -153,6 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Emit to reset the cart badge back to 0 or guest cart
             DeviceEventEmitter.emit('cart_updated');
+            
+            // Xóa lịch sử tìm kiếm local của guest để đảm bảo sạch sẽ sau mỗi phiên
+            await AsyncStorage.removeItem('guest_search_history');
         } catch (error) {
             console.error('Failed to clear session:', error);
         }

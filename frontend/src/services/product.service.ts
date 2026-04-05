@@ -1,6 +1,10 @@
 import api from './api';
 import { Color, Size, Category } from './attribute.service';
+import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 export { Color, Size, Category };
+
+const GUEST_SEARCH_KEY = 'guest_search_history';
 
 export interface ProductImage {
     id: number;
@@ -105,20 +109,54 @@ export const productService = {
     },
 
     async searchProducts(filters: SearchFilters): Promise<PagedResponse<Product>> {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token && filters.keyword && filters.keyword.trim() !== '') {
+            const localStr = await AsyncStorage.getItem(GUEST_SEARCH_KEY);
+            let items: SearchHistory[] = localStr ? JSON.parse(localStr) : [];
+            const existingIndex = items.findIndex(i => i.keyword.toLowerCase() === filters.keyword!.trim().toLowerCase());
+            if (existingIndex !== -1) items.splice(existingIndex, 1);
+            items.unshift({ id: Date.now(), keyword: filters.keyword.trim(), createdAt: new Date().toISOString() });
+            await AsyncStorage.setItem(GUEST_SEARCH_KEY, JSON.stringify(items));
+        }
+
         const response = await api.get('/products/search', { params: filters });
         return response.data.result;
     },
 
     async getSearchHistory(limit = 10): Promise<SearchHistory[]> {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token) {
+            const localStr = await AsyncStorage.getItem(GUEST_SEARCH_KEY);
+            const items = localStr ? JSON.parse(localStr) : [];
+            return items.slice(0, limit);
+        }
+
         const response = await api.get('/search-history', { params: { limit } });
         return response.data.result;
     },
 
     async deleteSearchHistory(id: number): Promise<void> {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token) {
+            const localStr = await AsyncStorage.getItem(GUEST_SEARCH_KEY);
+            if (localStr) {
+                let items: SearchHistory[] = JSON.parse(localStr);
+                items = items.filter(i => i.id !== id);
+                await AsyncStorage.setItem(GUEST_SEARCH_KEY, JSON.stringify(items));
+            }
+            return;
+        }
+
         await api.delete(`/search-history/${id}`);
     },
 
     async clearSearchHistory(): Promise<void> {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token) {
+            await AsyncStorage.removeItem(GUEST_SEARCH_KEY);
+            return;
+        }
+
         await api.delete('/search-history');
     },
 

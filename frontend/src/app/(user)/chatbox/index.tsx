@@ -133,6 +133,10 @@ export default function ChatBoxScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior="padding" 
+      >
       {/* Header */}
       <View style={styles.header}>
         <IconButton icon="arrow-left" onPress={() => router.back()} />
@@ -156,8 +160,7 @@ export default function ChatBoxScreen() {
       />
 
       {/* Input Section */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
-        <View style={[styles.inputContainer, { borderTopColor: theme.colors.outlineVariant, backgroundColor: theme.colors.surface }]}>
+      <View style={[styles.inputContainer, { borderTopColor: theme.colors.outlineVariant, backgroundColor: theme.colors.surface }]}>
           <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
             <View style={[styles.inputWrapper, { backgroundColor: theme.colors.surfaceVariant }]}>
               <RNTextInput

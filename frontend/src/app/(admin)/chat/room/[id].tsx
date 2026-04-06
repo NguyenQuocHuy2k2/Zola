@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import { ActivityIndicator, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -121,6 +121,10 @@ export default function AdminChatDetailScreen() {
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+            <KeyboardAvoidingView 
+                style={{ flex: 1 }} 
+                behavior="padding"
+            >
             <ChatHeader room={room} onBack={() => router.push('/(admin)/chat')} />
 
             <FlatList
@@ -148,6 +152,7 @@ export default function AdminChatDetailScreen() {
                 initialIndex={galleryIndex}
                 onClose={() => setGalleryVisible(false)}
             />
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }

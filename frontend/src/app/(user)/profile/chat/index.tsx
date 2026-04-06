@@ -3,6 +3,8 @@ import {
     View,
     StyleSheet,
     FlatList,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import { ActivityIndicator, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -115,6 +117,10 @@ export default function UserChatScreen() {
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+            <KeyboardAvoidingView 
+                style={{ flex: 1 }} 
+                behavior="padding"
+            >
             <ChatHeader room={room} onBack={() => router.back()} />
 
             <FlatList
@@ -142,6 +148,7 @@ export default function UserChatScreen() {
                 initialIndex={galleryIndex}
                 onClose={() => setGalleryVisible(false)}
             />
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }

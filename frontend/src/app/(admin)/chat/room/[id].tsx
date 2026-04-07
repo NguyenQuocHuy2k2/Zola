@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
-import { ActivityIndicator, useTheme } from 'react-native-paper';
+import { ActivityIndicator, useTheme, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
-import { chatService, ChatMessage, ChatRoom, AttachmentType } from '@/services/chat.service';
+import { chatService, ChatMessage, ChatRoom, AttachmentType, formatChatDateHeader, isDifferentDay } from '@/services/chat.service';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Modular Components reused from user side
@@ -131,14 +131,31 @@ export default function AdminChatDetailScreen() {
                 ref={flatListRef}
                 data={messages}
                 keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                    <ChatMessageItem 
-                        item={item} 
-                        isMine={item.senderId === user?.id}
-                        otherUserAvatar={room?.otherUserAvatar}
-                        onImagePress={onImagePress}
-                    />
-                )}
+                renderItem={({ item, index }) => {
+                    let showHeader = false;
+                    if (index === messages.length - 1) {
+                        showHeader = true; // Oldest message
+                    } else {
+                        const previousChronologicalMessage = messages[index + 1];
+                        showHeader = isDifferentDay(item.timestamp, previousChronologicalMessage.timestamp);
+                    }
+
+                    return (
+                        <View>
+                            {showHeader && (
+                                <Text style={styles.dateHeader}>
+                                    {formatChatDateHeader(item.timestamp)}
+                                </Text>
+                            )}
+                            <ChatMessageItem 
+                                item={item} 
+                                isMine={item.senderId === user?.id}
+                                otherUserAvatar={room?.otherUserAvatar}
+                                onImagePress={onImagePress}
+                            />
+                        </View>
+                    );
+                }}
                 inverted
                 contentContainerStyle={styles.messageList}
                 showsVerticalScrollIndicator={false}
@@ -169,5 +186,12 @@ const styles = StyleSheet.create({
     },
     messageList: {
         paddingVertical: 16,
+    },
+    dateHeader: {
+        textAlign: 'center',
+        color: '#888',
+        fontSize: 12,
+        marginVertical: 16,
+        fontWeight: '500',
     },
 });

@@ -42,6 +42,36 @@ export interface AttachmentRequest {
     thumbnailUrl?: string;
 }
 
+export const formatChatDateHeader = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    
+    const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    
+    const nowStartOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const dateStartOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    
+    const diffDays = Math.floor((nowStartOfDay - dateStartOfDay) / (1000 * 60 * 60 * 24));
+    
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
+    
+    if (diffDays < 7 && diffDays >= 0) {
+        return `${timeStr} ${days[date.getDay()]}`;
+    } else {
+        return `${timeStr} ${date.getDate()} Tháng ${date.getMonth() + 1}, ${date.getFullYear()}`;
+    }
+};
+
+export const isDifferentDay = (dateStr1: string, dateStr2: string) => {
+    const d1 = new Date(dateStr1);
+    const d2 = new Date(dateStr2);
+    return d1.getFullYear() !== d2.getFullYear() || 
+           d1.getMonth() !== d2.getMonth() || 
+           d1.getDate() !== d2.getDate();
+};
+
 export const chatService = {
     async getRooms(): Promise<ChatRoom[]> {
         const response = await api.get('/chat/rooms');

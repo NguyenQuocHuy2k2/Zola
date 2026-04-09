@@ -58,6 +58,9 @@ export default function AdminChatDetailScreen() {
 
     const initRoom = useCallback(async () => {
         if (!id) return;
+        setLoading(true);
+        setMessages([]);
+        setRoom(null);
         try {
             // Find the room from list first or we could have a getRoomById API
             const allRooms = await chatService.getRooms();

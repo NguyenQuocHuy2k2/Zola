@@ -109,10 +109,16 @@ public class ChatServiceImpl implements ChatService {
         ChatRoom room = chatRoomRepository.findById(roomId).orElse(null);
         if (room != null) {
             String recipientId = senderId.equals(room.getUserId()) ? room.getShopId() : room.getUserId();
-            User otherUser = userRepository.findById(senderId).orElse(null); // Sender is the 'otherUser' for the recipient
+            User senderUser = userRepository.findById(senderId).orElse(null); 
             long unreadCount = chatMessageRepository.countByRoomIdAndIsReadFalseAndSenderIdNot(room.getId(), recipientId);
-            ChatRoomResponse roomResponse = chatConverter.toChatRoomResponse(room, otherUser, savedMessage, unreadCount);
+            ChatRoomResponse roomResponse = chatConverter.toChatRoomResponse(room, senderUser, savedMessage, unreadCount);
             socketService.sendToUser(recipientId, "update_chat_list", roomResponse);
+            
+            // Notify sender as well so their chat list updates immediately
+            User recipientUser = userRepository.findById(recipientId).orElse(null);
+            long senderUnreadCount = chatMessageRepository.countByRoomIdAndIsReadFalseAndSenderIdNot(room.getId(), senderId);
+            ChatRoomResponse senderRoomResponse = chatConverter.toChatRoomResponse(room, recipientUser, savedMessage, senderUnreadCount);
+            socketService.sendToUser(senderId, "update_chat_list", senderRoomResponse);
         }
  
         return response;

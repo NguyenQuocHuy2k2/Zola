@@ -100,6 +100,10 @@ export const useChatSocket = (roomId?: string, isFocused: boolean = true) => {
         const oldRoomId = roomIdRef.current;
         roomIdRef.current = roomId;
 
+        if (oldRoomId !== roomId) {
+            setMessages([]);
+        }
+
         if (socketRef.current?.connected) {
             if (oldRoomId && oldRoomId !== roomId) {
                 socketRef.current.emit('leave_room', oldRoomId);

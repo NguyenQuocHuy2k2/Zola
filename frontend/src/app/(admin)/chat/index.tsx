@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { Searchbar, Text, ActivityIndicator, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { chatService, ChatRoom } from '@/services/chat.service';
 import { ChatRoomItem } from '@/components/chat/chat-room-item';
 import { useChatSocket } from '@/hooks/use-chat-socket';
@@ -61,9 +61,11 @@ export default function AdminChatListScreen() {
         };
     }, [socket]);
 
-    useEffect(() => {
-        fetchRooms();
-    }, [fetchRooms]);
+    useFocusEffect(
+        useCallback(() => {
+            fetchRooms();
+        }, [fetchRooms])
+    );
 
     useEffect(() => {
         const query = searchQuery.toLowerCase();

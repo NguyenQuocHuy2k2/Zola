@@ -16,8 +16,17 @@ public class ChatBoxController {
     private final ChatBoxService chatBoxService;
 
     @PostMapping("/chat")
-    public ApiResponse<ChatBoxResponse> chat(@RequestParam String message) {
-        String userId = SecurityUtils.getCurrentUserId();
+    public ApiResponse<ChatBoxResponse> chat(@RequestParam String message, jakarta.servlet.http.HttpServletRequest request) {
+        String userId;
+        try {
+            userId = SecurityUtils.getCurrentUserId();
+            if (userId == null || "anonymousUser".equals(userId)) {
+                userId = "GUEST_" + request.getSession().getId();
+            }
+        } catch (Exception e) {
+            userId = "GUEST_" + request.getSession().getId();
+        }
+
         return ApiResponse.<ChatBoxResponse>builder()
                 .result(chatBoxService.chat(message, userId))
                 .build();

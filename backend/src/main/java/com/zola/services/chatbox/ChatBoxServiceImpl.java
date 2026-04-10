@@ -142,7 +142,24 @@ public class ChatBoxServiceImpl implements ChatBoxService {
     }
 
     private ChatBoxResponse handleOrderInquiry(String message, String conversationId) {
-        // 1. Lấy danh sách đơn hàng của người dùng thông qua OrderService
+        // 1. Kiểm tra nếu là Khách chưa đăng nhập
+        if (conversationId != null && conversationId.startsWith("GUEST_")) {
+            String prompt = """
+                Bạn là trợ lý AI của cửa hàng thời trang Zola. 
+                Người dùng chưa đăng nhập tài khoản nhưng lại hỏi về tình trạng đơn hàng.
+                Hãy trả lời một cách lịch sự, chuyên nghiệp và yêu cầu họ vui lòng Đăng nhập vào hệ thống thì bạn mới có thể tra cứu đơn hàng giúp họ được.
+                """;
+
+            String aiResponse = chatClient.prompt()
+                    .user(prompt)
+                    .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                    .call()
+                    .content();
+
+            return new ChatBoxResponse(ChatIntent.ORDER_INQUIRY, aiResponse, null);
+        }
+
+        // 2. Lấy danh sách đơn hàng của người dùng thông qua OrderService
         List<OrderResponse> myOrders = orderService.getMyOrders();
 
         if (myOrders.isEmpty()) {

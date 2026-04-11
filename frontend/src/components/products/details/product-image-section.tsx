@@ -18,6 +18,7 @@ interface ProductImageSectionProps {
     onBack: () => void;
     onToggleFavorite: () => void;
     isFavorite: boolean;
+    showFavoriteIcon?: boolean;
     contentSheetOverlap: number;
 }
 
@@ -28,6 +29,7 @@ export default function ProductImageSection({
     onBack,
     onToggleFavorite,
     isFavorite,
+    showFavoriteIcon = true,
     contentSheetOverlap,
 }: ProductImageSectionProps) {
     return (
@@ -75,17 +77,19 @@ export default function ProductImageSection({
                         style={{ margin: 0 }}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.headerBtn, { padding: 4 }]}
-                    onPress={onToggleFavorite}
-                >
-                    <IconButton
-                        icon={isFavorite ? "heart" : "heart-outline"}
-                        size={22}
-                        iconColor={isFavorite ? "#FF5252" : "#1E1E1E"}
-                        style={{ margin: 0 }}
-                    />
-                </TouchableOpacity>
+                {showFavoriteIcon && (
+                    <TouchableOpacity
+                        style={[styles.headerBtn, { padding: 4 }]}
+                        onPress={onToggleFavorite}
+                    >
+                        <IconButton
+                            icon={isFavorite ? "heart" : "heart-outline"}
+                            size={22}
+                            iconColor={isFavorite ? "#FF5252" : "#1E1E1E"}
+                            style={{ margin: 0 }}
+                        />
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
     );

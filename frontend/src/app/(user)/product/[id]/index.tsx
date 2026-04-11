@@ -21,6 +21,7 @@ import { reviewService, Review } from '@/services/review.service';
 import ProductSelectionModal from "@/components/products/product-selection-modal";
 import StatusModal, { StatusType } from "@/components/ui/status-modal";
 import { ProductVariant as ServiceProductVariant } from "@/services/product.service";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Modular Components
 import ProductImageSection from "@/components/products/details/product-image-section";
@@ -35,6 +36,7 @@ const CONTENT_SHEET_OVERLAP = 40;
 export default function ProductDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
+    const { user } = useAuth();
 
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -195,6 +197,7 @@ export default function ProductDetailScreen() {
                     onBack={handleBack}
                     onToggleFavorite={handleToggleFavorite}
                     isFavorite={isFavorite}
+                    showFavoriteIcon={!!user}
                     contentSheetOverlap={CONTENT_SHEET_OVERLAP}
                 />
 

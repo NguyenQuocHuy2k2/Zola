@@ -73,6 +73,9 @@ public class Order {
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
 
+    @Column(name = "delivered_at")
+    LocalDateTime deliveredAt;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<OrderItem> items;
 }

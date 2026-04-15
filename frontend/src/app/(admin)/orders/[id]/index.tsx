@@ -14,7 +14,7 @@ import CancellationReasonModal from '@/components/admin/orders/details/cancellat
 import StatusModal from '@/components/ui/status-modal';
 
 
-const STATUS_ORDER: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PREPARING', 'SHIPPING', 'RECEIVED'];
+const STATUS_ORDER: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PREPARING', 'SHIPPING', 'DELIVERED'];
 
 const getNextStatus = (current: OrderStatus): OrderStatus | null => {
     const idx = STATUS_ORDER.indexOf(current);

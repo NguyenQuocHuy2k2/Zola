@@ -184,11 +184,30 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
         
+        // Security check
+        boolean isAdmin = false;
+        try {
+            isAdmin = SecurityUtils.isAdmin();
+            if (!isAdmin) {
+                String userId = SecurityUtils.getCurrentUserId();
+                if (!order.getUser().getId().equals(userId)) {
+                    throw new AppException(ErrorCode.FORBIDDEN);
+                }
+            }
+        } catch (Exception e) {
+            // If called from scheduler or without auth context, reject it unless it's an internal call
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
+
+        return updateStatusInternal(order, newStatus, reason, isAdmin);
+    }
+
+    private OrderResponse updateStatusInternal(Order order, OrderStatus newStatus, CancellationReason reason, boolean isAdmin) {
         OrderStatus oldStatus = order.getStatus();
         if (oldStatus == newStatus) return orderConverter.toOrderResponse(order);
 
         // Validate transition
-        validateStatusTransition(oldStatus, newStatus);
+        validateStatusTransition(oldStatus, newStatus, isAdmin);
 
         // Handle Stock Adjustments
         handleStockAdjustment(order, oldStatus, newStatus);
@@ -196,6 +215,8 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(newStatus);
         if (newStatus == OrderStatus.CANCELLED) {
             order.setCancellationReason(reason);
+        } else if (newStatus == OrderStatus.DELIVERED) {
+            order.setDeliveredAt(LocalDateTime.now());
         }
 
         Order savedOrder = orderRepository.save(order);
@@ -213,7 +234,7 @@ public class OrderServiceImpl implements OrderService {
         return orderConverter.toOrderResponse(savedOrder);
     }
 
-    private void validateStatusTransition(OrderStatus oldStatus, OrderStatus newStatus) {
+    private void validateStatusTransition(OrderStatus oldStatus, OrderStatus newStatus, boolean isAdmin) {
         if (oldStatus == OrderStatus.CANCELLED || oldStatus == OrderStatus.RECEIVED) {
             throw new AppException(ErrorCode.INVALID_ORDER_STATUS_TRANSITION);
         }
@@ -222,17 +243,14 @@ public class OrderServiceImpl implements OrderService {
         if (newStatus == OrderStatus.CANCELLED) return;
 
         // For Admin: Allow any forward progression
-        if (SecurityUtils.isAdmin()) {
+        if (isAdmin) {
             if (newStatus.ordinal() > oldStatus.ordinal()) return;
             throw new AppException(ErrorCode.INVALID_ORDER_STATUS_TRANSITION);
         }
 
         // For non-admin: Must follow strict sequential order
         boolean valid = switch (oldStatus) {
-            case PENDING -> newStatus == OrderStatus.CONFIRMED;
-            case CONFIRMED -> newStatus == OrderStatus.PREPARING;
-            case PREPARING -> newStatus == OrderStatus.SHIPPING;
-            case SHIPPING -> newStatus == OrderStatus.RECEIVED;
+            case DELIVERED -> newStatus == OrderStatus.RECEIVED;
             default -> false;
         };
 
@@ -349,6 +367,17 @@ public class OrderServiceImpl implements OrderService {
                 discount = discount.min(voucher.getMaxDiscountAmount());
             }
             return discount.min(orderTotal);
+        }
+    }
+
+    @org.springframework.scheduling.annotation.Scheduled(cron = "0 0 * * * *") // Run every hour
+    @Transactional
+    public void autoConfirmReceivedOrders() {
+        LocalDateTime fiveDaysAgo = LocalDateTime.now().minusDays(5);
+        List<Order> orders = orderRepository.findByStatusAndDeliveredAtBefore(OrderStatus.DELIVERED, fiveDaysAgo);
+        for (Order order : orders) {
+            // Internal system is treated as Admin
+            updateStatusInternal(order, OrderStatus.RECEIVED, null, true);
         }
     }
 }

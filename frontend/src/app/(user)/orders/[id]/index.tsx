@@ -126,7 +126,7 @@ export default function OrderDetailScreen() {
     };
 
     const canConfirm = () => {
-        return order?.status === 'SHIPPING';
+        return order?.status === 'DELIVERED';
     };
 
     const canReview = () => {

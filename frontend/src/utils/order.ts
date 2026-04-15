@@ -7,6 +7,7 @@ export const TABS = [
     { value: 'CONFIRMED', label: STATUS_LABEL.CONFIRMED, icon: 'check-circle-outline' },
     { value: 'PREPARING', label: STATUS_LABEL.PREPARING, icon: 'package-variant' },
     { value: 'SHIPPING', label: STATUS_LABEL.SHIPPING, icon: 'truck-delivery-outline' },
+    { value: 'DELIVERED', label: STATUS_LABEL.DELIVERED, icon: 'map-marker-check-outline' },
     { value: 'RECEIVED', label: STATUS_LABEL.RECEIVED, icon: 'archive-check-outline' },
     { value: 'CANCELLED', label: STATUS_LABEL.CANCELLED, icon: 'close-circle-outline' },
 ];

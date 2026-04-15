@@ -2,7 +2,7 @@ import api from './api';
 import { CartItem } from './cart.service';
 import { DeviceEventEmitter } from 'react-native';
 
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'RECEIVED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'DELIVERED' | 'RECEIVED' | 'CANCELLED';
 export type PaymentMethod = 'COD' | 'VNPAY';
 export type CancellationReason = 
     | 'CHANGE_MIND' | 'WRONG_INFO' | 'PAYMENT_ISSUE' | 'TIME_DELAY' | 'FORGOT_VOUCHER' // User

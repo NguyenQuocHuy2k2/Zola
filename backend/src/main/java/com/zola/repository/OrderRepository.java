@@ -14,6 +14,7 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, String> {
     List<Order> findByUserOrderByCreatedAtDesc(User user);
     List<Order> findAllByOrderByCreatedAtDesc();
+    List<Order> findByStatusAndDeliveredAtBefore(com.zola.enums.OrderStatus status, LocalDateTime date);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt >= :startDate")
     long countOrdersSince(@Param("startDate") LocalDateTime startDate);

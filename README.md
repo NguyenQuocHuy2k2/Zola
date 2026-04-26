@@ -117,4 +117,6 @@ npx expo start --dev-client
 
 ---
 
-> Designed & Developed by **[Your Name/Profile Link]**
+**Nguyễn Quốc Huy**
+
+**Mai Công Phát**
